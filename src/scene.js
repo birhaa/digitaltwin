@@ -67,6 +67,7 @@ const init = function(){
         shader.uniforms.time = { value: timeStart };
         shader.uniforms.size = { value : 1.0};
         shader.uniforms.playWave = {value : true};
+        shader.uniforms.useOffset = {value : true};
         shader.uniforms.rainbow1Dir = new THREE.Uniform(new THREE.Vector3(0.0,0.0,0.0))
         shader.uniforms.rainbow2Dir = new THREE.Uniform(new THREE.Vector3(1.0,0.0,0.0))
         //console.log(shader.uniforms);
@@ -77,6 +78,10 @@ const init = function(){
         console.log(materialShader);
 
       };
+
+      var globalParams = {
+        useOffset : true
+      }
 
       var params = {
           color1: 0xffffff,
@@ -104,10 +109,12 @@ const init = function(){
       folder
       .add(params, 'size', 0.0, 10.0)
       .onChange( () => materialShader.uniforms.size.value = params.size );
+      folder.add(globalParams, 'useOffset')
+      .onChange( () =>  materialShader.uniforms.useOffset.value = globalParams.useOffset );
 
       folder1
       .addColor( params, 'color1' )
-      .onChange( () => material2.color.setHex(params.color1) )
+      //.onChange( () => material2.color.setHex(params.color1) )
       folder1.add(params, 'rainbowX', 0.0, 1.0)
       .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.x = params.rainbowX );
       folder1.add(params, 'rainbowY', 0.0, 1.0)

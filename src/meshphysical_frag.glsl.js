@@ -68,6 +68,7 @@ uniform float opacity;
 uniform float time;
 uniform float size;
 uniform bool playWave;
+uniform bool useOffset;
 
 uniform vec3 rainbow1Dir;
 uniform vec3 rainbow2Dir;
@@ -84,7 +85,9 @@ vec2 sineWave(vec2 uv, vec2 phase){
 vec2 calculateNewUvs(bool isMaterial2){
 	vec2 vUv3 = vUv;
 	if( isMaterial2 ){
-		vUv3.x -= 0.01 * size;
+		if(useOffset){
+			vUv3.x -= 0.01 * size;
+		}
 		if(playWave){
 			vUv3 = sineWave(vUv3, vec2(time,0.0));
 		}

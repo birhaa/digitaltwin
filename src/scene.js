@@ -70,6 +70,11 @@ const init = function(){
         shader.uniforms.useOffset = {value : true};
         shader.uniforms.rainbow1Dir = new THREE.Uniform(new THREE.Vector3(0.0,0.0,0.0))
         shader.uniforms.rainbow2Dir = new THREE.Uniform(new THREE.Vector3(1.0,0.0,0.0))
+        shader.uniforms.blurRadius1 = {value : 0.0};
+        shader.uniforms.blurRes1 = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
+        shader.uniforms.blurRadius2 = {value : 0.0};
+        shader.uniforms.blurRes2 = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
+
         //console.log(shader.uniforms);
         shader.vertexShader = meshphysical_vert;
         shader.fragmentShader = meshphysical_frag;
@@ -89,7 +94,10 @@ const init = function(){
           playWave : true,
           rainbowX : 0.0,
           rainbowY : 0.0,
-          rainbowZ : 0.0
+          rainbowZ : 0.0,
+          blurRadius : 0.0,
+          blurResX : 0.0,
+          blurResY : 0.0
       };
 
       var params2 = {
@@ -98,7 +106,10 @@ const init = function(){
           playWave : true,
           rainbowX : 1.0,
           rainbowY : 0.0,
-          rainbowZ : 0.0
+          rainbowZ : 0.0,
+          blurRadius : 0.0,
+          blurResX : 0.0,
+          blurResY : 0.0
       };
       //gui.add(materialShader.uniforms.color, 'value', 0, 1000).name('color');
       var folder = gui.addFolder( 'PROPERTIES' );
@@ -121,6 +132,14 @@ const init = function(){
       .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.y = params.rainbowY );
       folder1.add(params, 'rainbowZ', 0.0, 1.0)
       .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.z = params.rainbowZ );
+      folder1.add(params, "blurRadius", 0.0, 5.0)
+      .onChange( () =>  materialShader.uniforms.blurRadius1.value = params.blurRadius );
+      folder1.add(params, "blurResX", 0.0, 1000.0)
+      .onChange( () =>  materialShader.uniforms.blurRes1.value.x = params.blurResX );
+      folder1.add(params, "blurResY", 0.0, 1000.0)
+      .onChange( () =>  materialShader.uniforms.blurRes1.value.y = params.blurResY );
+
+
 
 
       folder2
@@ -134,6 +153,12 @@ const init = function(){
       .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.y = params2.rainbowY );
       folder2.add(params2, 'rainbowZ', 0.0, 1.0)
       .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.z = params2.rainbowZ );
+      folder2.add(params2, "blurRadius", 0.0, 5.0)
+      .onChange( () =>  materialShader.uniforms.blurRadius2.value = params2.blurRadius );
+      folder2.add(params2, "blurResX", 0.0, 1000.0)
+      .onChange( () =>  materialShader.uniforms.blurRes2.value.x = params2.blurResX );
+      folder2.add(params2, "blurResY", 0.0, 1000.0)
+      .onChange( () =>  materialShader.uniforms.blurRes2.value.y = params2.blurResY );
 
       folder.open()
       folder1.open();

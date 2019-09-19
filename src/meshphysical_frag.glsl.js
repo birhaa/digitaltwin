@@ -42,6 +42,51 @@ vec3 spectral_zucconi6 (float w)
 		bump3y(c1 * (x - x1), y1) +
 		bump3y(c2 * (x - x2), y2) ;
 }
+//START BLUR
+
+vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
+	vec4 color = vec4(0.0);
+  vec2 off1 = vec2(1.411764705882353) * direction;
+  vec2 off2 = vec2(3.2941176470588234) * direction;
+  vec2 off3 = vec2(5.176470588235294) * direction;
+  color += texture2D(image, uv) * 0.1964825501511404;
+  color += texture2D(image, uv + (off1 / resolution)) * 0.2969069646728344;
+  color += texture2D(image, uv - (off1 / resolution)) * 0.2969069646728344;
+  color += texture2D(image, uv + (off2 / resolution)) * 0.09447039785044732;
+  color += texture2D(image, uv - (off2 / resolution)) * 0.09447039785044732;
+  color += texture2D(image, uv + (off3 / resolution)) * 0.010381362401148057;
+  color += texture2D(image, uv - (off3 / resolution)) * 0.010381362401148057;
+  return color;
+}
+
+uniform float blurRadius1;
+uniform float blurRadius2;
+uniform vec2 blurRes1;
+uniform vec2 blurRes2;
+
+vec4 textureWithBlur( bool isMaterial2, vec2 vUv3, sampler2D map){
+	float blurRadius;
+	vec2 blurRes;
+	if(isMaterial2){
+		blurRadius = blurRadius2;
+		blurRes = blurRes2;
+	} else{
+		blurRadius = blurRadius1;
+		blurRes = blurRes1;
+	}
+	vec4 texelColor;
+	if(blurRadius > 0.0){
+		vec4 texelColor1 =  blur(map, vUv3, blurRes, vec2(blurRadius, 0.0));
+		vec4 texelColor2 =  blur(map, vUv3, blurRes, vec2(0.0, blurRadius));
+		texelColor = (texelColor1 + texelColor2)/2.0;
+	}else{
+		texelColor = texture2D( map, vUv3 );
+	}
+	texelColor = mapTexelToLinear( texelColor );
+	return texelColor;
+}
+
+//END BLUR
 
 
 uniform vec3 diffuse;
@@ -117,8 +162,6 @@ vec3 calculateRainbow(vec3 uv_tangent){
 	return vec3(0.0,0.0,0.0);
 }
 
-
-
 void main() {
 	#include <clipping_planes_fragment>
 
@@ -133,9 +176,7 @@ void main() {
 
 	#include <logdepthbuf_fragment>
 
-	vec4 texelColor = texture2D( map, vUv3 );
-
-	texelColor = mapTexelToLinear( texelColor );
+	vec4 texelColor = textureWithBlur(isMaterial2, vUv3, map);
 	diffuseColor *= texelColor;
 
 	#include <color_fragment>

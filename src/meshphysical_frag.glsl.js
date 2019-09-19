@@ -112,8 +112,12 @@ uniform float opacity;
 
 uniform float time;
 uniform float size;
-uniform bool playWave;
 uniform bool useOffset;
+
+uniform bool playWave;
+uniform float waveSpeed;
+uniform float waveFrequency;
+uniform vec2 waveSize;
 
 uniform vec3 rainbow1Dir;
 uniform vec3 rainbow2Dir;
@@ -122,8 +126,8 @@ varying vec3 lightDir;
 varying vec3 viewDir;
 
 vec2 sineWave(vec2 uv, vec2 phase){
-	float x = sin( 25.0*uv.y + 30.0*uv.x + 6.28*phase.x) * 0.01;
-	float y = sin( 25.0*uv.y + 30.0*uv.x + 6.28*phase.y) * 0.03;
+	float x = sin( waveFrequency*uv.y + waveFrequency*uv.x + 6.28*phase.x) * waveSize.x;
+	float y = cos( waveFrequency*uv.y + waveFrequency*uv.x + 6.28*phase.y) * waveSize.y;
 	return vec2(uv.x+x, uv.y+y);
 }
 
@@ -134,7 +138,7 @@ vec2 calculateNewUvs(bool isMaterial2){
 			vUv3.x -= 0.01 * size;
 		}
 		if(playWave){
-			vUv3 = sineWave(vUv3, vec2(time,0.0));
+			vUv3 = sineWave(vUv3, vec2(time* waveSpeed,0.0));
 		}
 	}
 	return vUv3;

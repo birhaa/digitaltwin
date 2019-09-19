@@ -65,11 +65,14 @@ const init = function(){
 
       material2.onBeforeCompile = function( shader ) {
         shader.uniforms.time = { value: timeStart };
-        shader.uniforms.size = { value : 1.0};
+        shader.uniforms.size = { value : 5.6};
         shader.uniforms.playWave = {value : true};
+        shader.uniforms.waveSpeed = {value : 0.2};
+        shader.uniforms.waveFrequency = {value : 21.4};
+        shader.uniforms.waveSize = new THREE.Uniform(new THREE.Vector2(0.07,0.057))
         shader.uniforms.useOffset = {value : true};
         shader.uniforms.rainbow1Dir = new THREE.Uniform(new THREE.Vector3(0.0,0.0,0.0))
-        shader.uniforms.rainbow2Dir = new THREE.Uniform(new THREE.Vector3(1.0,0.0,0.0))
+        shader.uniforms.rainbow2Dir = new THREE.Uniform(new THREE.Vector3(0.1,0.0,0.54))
         shader.uniforms.blurRadius1 = {value : 0.0};
         shader.uniforms.blurRes1 = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
         shader.uniforms.blurRadius2 = {value : 0.0};
@@ -85,13 +88,13 @@ const init = function(){
       };
 
       var globalParams = {
-        useOffset : true
+        useOffset : true,
+        size: 5.6
+
       }
 
       var params = {
           color1: 0xffffff,
-          size: 1,
-          playWave : true,
           rainbowX : 0.0,
           rainbowY : 0.0,
           rainbowZ : 0.0,
@@ -102,11 +105,14 @@ const init = function(){
 
       var params2 = {
           color1: 0xffffff,
-          size: 1,
           playWave : true,
-          rainbowX : 1.0,
+          waveSpeed : 1.0,
+          waveSizeX : 0.01,
+          waveSizeY : 0.01,
+          waveFrequency : 1.0,
+          rainbowX : 0.1,
           rainbowY : 0.0,
-          rainbowZ : 0.0,
+          rainbowZ : 0.54,
           blurRadius : 0.0,
           blurResX : 0.0,
           blurResY : 0.0
@@ -118,8 +124,8 @@ const init = function(){
 
 
       folder
-      .add(params, 'size', 0.0, 10.0)
-      .onChange( () => materialShader.uniforms.size.value = params.size );
+      .add(globalParams, 'size', 0.0, 10.0)
+      .onChange( () => materialShader.uniforms.size.value = globalParams.size );
       folder.add(globalParams, 'useOffset')
       .onChange( () =>  materialShader.uniforms.useOffset.value = globalParams.useOffset );
 
@@ -147,6 +153,14 @@ const init = function(){
       .onChange( () => material2.color.setHex(params2.color1) );
       folder2.add(params2, 'playWave')
       .onChange( () =>  materialShader.uniforms.playWave.value = params2.playWave );
+      folder2.add(params2, 'waveSpeed', 0.0,5.0)
+      .onChange( () =>  materialShader.uniforms.waveSpeed.value = params2.waveSpeed );
+      folder2.add(params2, 'waveFrequency', 0.0,100.0)
+      .onChange( () =>  materialShader.uniforms.waveFrequency.value = params2.waveFrequency );
+      folder2.add(params2, 'waveSizeX', 0.0,0.1)
+      .onChange( () =>  materialShader.uniforms.waveSize.value.x = params2.waveSizeX );
+      folder2.add(params2, 'waveSizeY', 0.0,0.1)
+      .onChange( () =>  materialShader.uniforms.waveSize.value.y = params2.waveSizeY );
       folder2.add(params2, 'rainbowX', 0.0, 1.0)
       .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.x = params2.rainbowX );
       folder2.add(params2, 'rainbowY', 0.0, 1.0)

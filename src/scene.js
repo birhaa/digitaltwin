@@ -2,9 +2,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FresnelShader } from 'three/examples/jsm/shaders/FresnelShader.js';
+import {PlaneBufferGeometry} from'./customplanegeometry.js'
 import * as dat from 'dat.gui';
 import meshphysical_vert from './meshphysical_vert.glsl.js';
 import meshphysical_frag from './meshphysical_frag.glsl.js';
+import testimg from "./test.jpg"
+import bumpimg from "./bumpmap.jpg"
 
 
 
@@ -58,8 +61,9 @@ const init = function(){
       texture.format = THREE.RGBFormat;
     //  texture.offset.x = 0.1;
 
-      var geometry = new THREE.PlaneBufferGeometry( 6, 4,64 );
-      //var material = new THREE.MeshBasicMaterial( { map: texture, color: 0xffff00, side: THREE.DoubleSide} );
+      var dismap = new THREE.TextureLoader().load( bumpimg );
+      var bumpmap = new THREE.TextureLoader().load( bumpimg );
+      var material = new THREE.MeshStandardMaterial( { normalMap: bumpmap, displacementMap: dismap,displacementScale:0.1, metalness: 0.5, map: texture, color: 0xffffff, side: THREE.DoubleSide} );
 
       var material2 = new THREE.MeshBasicMaterial( {  color: 0xffffff, map: texture, side: THREE.DoubleSide } );
 
@@ -178,10 +182,25 @@ const init = function(){
       folder1.open();
       folder2.open();
 
-
-      var plane = new THREE.Mesh( geometry, material2 );
-      scene.add( plane );
+      var numberOfQuads = 25.0;
+      var quadSizePros = 1.0/numberOfQuads;
+      var planeSize = 6;
+      var quadSize = planeSize*quadSizePros;
+      for(var i = 0; i <numberOfQuads; i++){
+        var geometry = new PlaneBufferGeometry( quadSize, 4,32, 32, quadSizePros, i );
+        var m = i % 2 ==0 ?  material : material2;
+        var plane = new THREE.Mesh( geometry, m );
+        plane.translateX(i*quadSize -planeSize/2.0);
+        scene.add( plane );
+      }
       //console.log(material2)
+
+      var light = new THREE.AmbientLight( 0xffffff ); // soft white light
+      scene.add( light );
+
+      var light2 = new THREE.PointLight( 0xffffff, 1, 80 );
+      light2.position.set( 0, 0, 50 );
+      scene.add( light2 )
 
       playVideo(video);
       initVideoOnce = true;
@@ -199,6 +218,10 @@ const init = function(){
 
   render();
 
+
+}
+
+function createPlane(){
 
 }
 

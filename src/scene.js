@@ -8,6 +8,7 @@ import meshphysical_vert from './meshphysical_vert.glsl.js';
 import meshphysical_frag from './meshphysical_frag.glsl.js';
 import testimg from "./test.jpg"
 import bumpimg from "./bumpmap.jpg"
+import MaterialFolder from './MaterialFolder'
 
 
 
@@ -87,100 +88,10 @@ const init = function(){
         shader.fragmentShader = meshphysical_frag;
         materialShader = shader;
 
-        console.log(materialShader);
+        new MaterialFolder(material2,shader, gui, "MATERIAL 1");
 
       };
 
-      var globalParams = {
-        useOffset : true,
-        size: 5.6
-
-      }
-
-      var params = {
-          color1: 0xffffff,
-          rainbowX : 0.0,
-          rainbowY : 0.0,
-          rainbowZ : 0.0,
-          blurRadius : 0.0,
-          blurResX : 0.0,
-          blurResY : 0.0
-      };
-
-      var params2 = {
-          color1: 0xffffff,
-          playWave : true,
-          waveSpeed : 1.0,
-          waveSizeX : 0.01,
-          waveSizeY : 0.01,
-          waveFrequency : 1.0,
-          rainbowX : 0.1,
-          rainbowY : 0.0,
-          rainbowZ : 0.54,
-          blurRadius : 0.0,
-          blurResX : 0.0,
-          blurResY : 0.0
-      };
-      //gui.add(materialShader.uniforms.color, 'value', 0, 1000).name('color');
-      var folder = gui.addFolder( 'PROPERTIES' );
-      var folder1 = gui.addFolder( 'MATERIAL 1' );
-      var folder2 = gui.addFolder( 'MATERIAL 2' );
-
-
-      folder
-      .add(globalParams, 'size', 0.0, 10.0)
-      .onChange( () => materialShader.uniforms.size.value = globalParams.size );
-      folder.add(globalParams, 'useOffset')
-      .onChange( () =>  materialShader.uniforms.useOffset.value = globalParams.useOffset );
-
-      folder1
-      .addColor( params, 'color1' )
-      //.onChange( () => material2.color.setHex(params.color1) )
-      folder1.add(params, 'rainbowX', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.x = params.rainbowX );
-      folder1.add(params, 'rainbowY', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.y = params.rainbowY );
-      folder1.add(params, 'rainbowZ', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow1Dir.value.z = params.rainbowZ );
-      folder1.add(params, "blurRadius", 0.0, 5.0)
-      .onChange( () =>  materialShader.uniforms.blurRadius1.value = params.blurRadius );
-      folder1.add(params, "blurResX", 0.0, 1000.0)
-      .onChange( () =>  materialShader.uniforms.blurRes1.value.x = params.blurResX );
-      folder1.add(params, "blurResY", 0.0, 1000.0)
-      .onChange( () =>  materialShader.uniforms.blurRes1.value.y = params.blurResY );
-
-
-
-
-      folder2
-      .addColor( params2, 'color1' )
-      .onChange( () => material2.color.setHex(params2.color1) );
-      folder2.add(params2, 'playWave')
-      .onChange( () =>  materialShader.uniforms.playWave.value = params2.playWave );
-      folder2.add(params2, 'waveSpeed', 0.0,5.0)
-      .onChange( () =>  materialShader.uniforms.waveSpeed.value = params2.waveSpeed );
-      folder2.add(params2, 'waveFrequency', 0.0,100.0)
-      .onChange( () =>  materialShader.uniforms.waveFrequency.value = params2.waveFrequency );
-      folder2.add(params2, 'waveSizeX', 0.0,0.1)
-      .onChange( () =>  materialShader.uniforms.waveSize.value.x = params2.waveSizeX );
-      folder2.add(params2, 'waveSizeY', 0.0,0.1)
-      .onChange( () =>  materialShader.uniforms.waveSize.value.y = params2.waveSizeY );
-      folder2.add(params2, 'rainbowX', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.x = params2.rainbowX );
-      folder2.add(params2, 'rainbowY', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.y = params2.rainbowY );
-      folder2.add(params2, 'rainbowZ', 0.0, 1.0)
-      .onChange( () =>  materialShader.uniforms.rainbow2Dir.value.z = params2.rainbowZ );
-      folder2.add(params2, "blurRadius", 0.0, 5.0)
-      .onChange( () =>  materialShader.uniforms.blurRadius2.value = params2.blurRadius );
-      folder2.add(params2, "blurResX", 0.0, 1000.0)
-      .onChange( () =>  materialShader.uniforms.blurRes2.value.x = params2.blurResX );
-      folder2.add(params2, "blurResY", 0.0, 1000.0)
-      .onChange( () =>  materialShader.uniforms.blurRes2.value.y = params2.blurResY );
-
-      folder.open()
-      folder1.open();
-      folder2.open();
 
       var numberOfQuads = 25.0;
       var quadSizePros = 1.0/numberOfQuads;
@@ -193,7 +104,6 @@ const init = function(){
         plane.translateX(i*quadSize -planeSize/2.0);
         scene.add( plane );
       }
-      //console.log(material2)
 
       var light = new THREE.AmbientLight( 0xffffff ); // soft white light
       scene.add( light );

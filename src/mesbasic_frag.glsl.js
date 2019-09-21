@@ -1,34 +1,4 @@
 export default /* glsl */`
-#define STANDARD
-
-//BIRGITTE UNIFORMS
-
-//Blur
-uniform float blurRadius1;
-uniform float blurRadius2;
-uniform vec2 blurRes1;
-uniform vec2 blurRes2;
-
-//Stripes
-uniform float size;
-uniform bool useOffset;
-
-//Animation
-uniform float time;
-uniform bool playWave;
-uniform float waveSpeed;
-uniform float waveFrequency;
-uniform vec2 waveSize;
-
-//Rainbow
-uniform vec3 rainbow1Dir;
-uniform vec3 rainbow2Dir;
-varying vec3 lightDir;
-varying vec3 viewDir;
-
-//END BIRGITTE UNIFORMS
-
-//BIRGITTE METHODS
 
 vec3 bump3y (vec3 x, vec3 yoffset)
 {
@@ -72,7 +42,6 @@ vec3 spectral_zucconi6 (float w)
 		bump3y(c1 * (x - x1), y1) +
 		bump3y(c2 * (x - x2), y2) ;
 }
-
 //START BLUR
 
 vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
@@ -89,6 +58,11 @@ vec4 blur(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
   color += texture2D(image, uv - (off3 / resolution)) * 0.010381362401148057;
   return color;
 }
+
+uniform float blurRadius1;
+uniform float blurRadius2;
+uniform vec2 blurRes1;
+uniform vec2 blurRes2;
 
 vec4 textureWithBlur( bool isMaterial2, vec2 vUv3, sampler2D map){
 	float blurRadius;
@@ -114,20 +88,55 @@ vec4 textureWithBlur( bool isMaterial2, vec2 vUv3, sampler2D map){
 
 //END BLUR
 
+
+uniform vec3 diffuse;
+uniform float opacity;
+#ifndef FLAT_SHADED
+	varying vec3 vNormal;
+#endif
+
+#include <common>
+#include <color_pars_fragment>
+#include <uv_pars_fragment>
+#include <uv2_pars_fragment>
+#include <map_pars_fragment>
+#include <alphamap_pars_fragment>
+#include <aomap_pars_fragment>
+#include <lightmap_pars_fragment>
+#include <envmap_common_pars_fragment>
+#include <envmap_pars_fragment>
+#include <fog_pars_fragment>
+#include <specularmap_pars_fragment>
+#include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
+
+uniform float time;
+uniform float size;
+uniform bool useOffset;
+
+uniform bool playWave;
+uniform float waveSpeed;
+uniform float waveFrequency;
+uniform vec2 waveSize;
+
+uniform vec3 rainbow1Dir;
+uniform vec3 rainbow2Dir;
+
+varying vec3 lightDir;
+varying vec3 viewDir;
+
 vec2 sineWave(vec2 uv, vec2 phase){
 	float x = sin( waveFrequency*uv.y + waveFrequency*uv.x + 6.28*phase.x) * waveSize.x;
 	float y = cos( waveFrequency*uv.y + waveFrequency*uv.x + 6.28*phase.y) * waveSize.y;
 	return vec2(uv.x+x, uv.y+y);
 }
 
-vec2 calculateNewUvs(vec2 vUv, bool isMaterial2){
+vec2 calculateNewUvs(bool isMaterial2){
 	vec2 vUv3 = vUv;
 	if( isMaterial2 ){
 		if(useOffset){
 			vUv3.x -= 0.01 * size;
 		}
-	}
-	else{
 		if(playWave){
 			vUv3 = sineWave(vUv3, vec2(time* waveSpeed,0.0));
 		}
@@ -136,7 +145,7 @@ vec2 calculateNewUvs(vec2 vUv, bool isMaterial2){
 }
 
 vec3 calculateRainbow(vec3 uv_tangent){
-	float d = 2400.0; //nm
+	float d = 1600.0; //nm
 
 	vec3 L = lightDir;
 	vec3 V = viewDir;
@@ -157,106 +166,35 @@ vec3 calculateRainbow(vec3 uv_tangent){
 	return vec3(0.0,0.0,0.0);
 }
 
-//END BIRGITTE METHODS
-
-
-
-#ifdef PHYSICAL
-	#define REFLECTIVITY
-	#define CLEARCOAT
-	#define TRANSPARENCY
-#endif
-
-uniform vec3 diffuse;
-uniform vec3 emissive;
-uniform float roughness;
-uniform float metalness;
-uniform float opacity;
-
-#ifdef TRANSPARENCY
-	uniform float transparency;
-#endif
-
-#ifdef REFLECTIVITY
-	uniform float reflectivity;
-#endif
-
-#ifdef CLEARCOAT
-	uniform float clearcoat;
-	uniform float clearcoatRoughness;
-#endif
-
-#ifdef USE_SHEEN
-	uniform vec3 sheen;
-#endif
-
-varying vec3 vViewPosition;
-
-#ifndef FLAT_SHADED
-
-	varying vec3 vNormal;
-
-	#ifdef USE_TANGENT
-
-		varying vec3 vTangent;
-		varying vec3 vBitangent;
-
-	#endif
-
-#endif
-
-#include <common>
-#include <packing>
-#include <dithering_pars_fragment>
-#include <color_pars_fragment>
-#include <uv_pars_fragment>
-#include <uv2_pars_fragment>
-#include <map_pars_fragment>
-#include <alphamap_pars_fragment>
-#include <aomap_pars_fragment>
-#include <lightmap_pars_fragment>
-#include <emissivemap_pars_fragment>
-#include <bsdfs>
-#include <cube_uv_reflection_fragment>
-#include <envmap_common_pars_fragment>
-#include <envmap_physical_pars_fragment>
-#include <fog_pars_fragment>
-#include <lights_pars_begin>
-#include <lights_physical_pars_fragment>
-#include <shadowmap_pars_fragment>
-#include <bumpmap_pars_fragment>
-#include <normalmap_pars_fragment>
-#include <clearcoat_normalmap_pars_fragment>
-#include <roughnessmap_pars_fragment>
-#include <metalnessmap_pars_fragment>
-#include <logdepthbuf_pars_fragment>
-#include <clipping_planes_pars_fragment>
-
-
 void main() {
-
 	#include <clipping_planes_fragment>
 
-	//BIRGITTE
 	float nCols = 100.0/size;
 	bool isMaterial2 = mod(ceil(vUv.x * nCols),2.0) == 0.0;
-	vec2 vUv3 = calculateNewUvs(vUv,isMaterial2);
-	//END BIRGITTE
+	vec2 vUv3 = calculateNewUvs(isMaterial2);
 
 	vec4 diffuseColor = vec4( diffuse, opacity );
-	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
-	vec3 totalEmissiveRadiance = emissive;
+	if( isMaterial2 ){
+		diffuseColor = vec4(1.0,1.0,1.0,opacity);
+	}
 
 	#include <logdepthbuf_fragment>
 
-	//BIRGITTE
 	vec4 texelColor = textureWithBlur(isMaterial2, vUv3, map);
 	diffuseColor *= texelColor;
-	//END BIRGITTE
 
 	#include <color_fragment>
+	#include <alphamap_fragment>
+	#include <alphatest_fragment>
+	#include <specularmap_fragment>
 
-	//BIRGITTE
+	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+	#ifdef USE_LIGHTMAP
+		reflectedLight.indirectDiffuse += texture2D( lightMap, vUv2 ).xyz * lightMapIntensity;
+	#else
+		reflectedLight.indirectDiffuse += vec3( 1.0 );
+	#endif
+
 
 	vec3 reflectionColor;
 	if(isMaterial2) {
@@ -266,41 +204,20 @@ void main() {
 	}
 	diffuseColor.rgb = diffuseColor.rgb + reflectionColor;
 
-	//END BIRGITTE
 
-	#include <alphamap_fragment>
-	#include <alphatest_fragment>
-	#include <roughnessmap_fragment>
-	#include <metalnessmap_fragment>
-	#include <normal_fragment_begin>
-	#include <normal_fragment_maps>
-	#include <clearcoat_normal_fragment_begin>
-	#include <clearcoat_normal_fragment_maps>
-	#include <emissivemap_fragment>
-
-	// accumulation
-	#include <lights_physical_fragment>
-	#include <lights_fragment_begin>
-	#include <lights_fragment_maps>
-	#include <lights_fragment_end>
-
-	// modulation
 	#include <aomap_fragment>
 
-	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+	reflectedLight.indirectDiffuse *= diffuseColor.rgb;
+	vec3 outgoingLight = reflectedLight.indirectDiffuse;
 
-	// this is a stub for the transparency model
-	#ifdef TRANSPARENCY
-		diffuseColor.a *= saturate( 1. - transparency + linearToRelativeLuminance( reflectedLight.directSpecular + reflectedLight.indirectSpecular ) );
-	#endif
+	#include <envmap_fragment>
 
-	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
 
+
+	#include <premultiplied_alpha_fragment>
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>
-	#include <premultiplied_alpha_fragment>
-	#include <dithering_fragment>
-
 }
 `;

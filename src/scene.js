@@ -61,15 +61,28 @@ const init = function(){
 
       var params = {
         nCols : 8,
-        useOffset : false
+        useOffset : false,
+        mirror : false,
+        mirrorHalf : false,
+        mirrorOffset : false,
+
       }
       var mainFolder = gui.addFolder( 'MAIN' );
       mainFolder
       .add(params, 'nCols', 1, 100, 1)
-      .onChange( () => {initPlane(texture, mainFolder, params.nCols, scene, params.useOffset)} );
+      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
+      mainFolder.add(params, 'mirror' )
+      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
+      initPlane(texture, mainFolder, scene, params)
+      mainFolder.add(params, 'mirrorHalf' )
+      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
+      initPlane(texture, mainFolder, scene, params)
       mainFolder.add(params, 'useOffset' )
-      .onChange( () => {initPlane(texture, mainFolder, params.nCols, scene, params.useOffset)} );
-      initPlane(texture, mainFolder, params.nCols, scene)
+      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
+      initPlane(texture, mainFolder, scene, params)
+      mainFolder.add(params, 'mirrorOffset' )
+      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
+      initPlane(texture, mainFolder, scene, params)
       mainFolder.open();
 
 
@@ -102,7 +115,7 @@ const init = function(){
 
 }
 
-function initPlane(texture, mainFolder, nCols, scene, useOffset){
+function initPlane(texture, mainFolder, scene, params){
 
   if(mirror)
     scene.remove(mirror)
@@ -113,13 +126,13 @@ function initPlane(texture, mainFolder, nCols, scene, useOffset){
   var material2 = initMaterial2(timeStart, texture, mainFolder);
 
 
-  var numberOfQuads = nCols;
+  var numberOfQuads = params.nCols;
   var quadSizePros = 1.0/numberOfQuads;
   var planeSize = 6;
   var quadSize = planeSize*quadSizePros;
   for(var i = 0; i <numberOfQuads; i++){
     console.log("quadSize", quadSizePros + " " + i)
-    var geometry = new PlaneBufferGeometry( quadSize, 4,32, 32, quadSizePros, i, useOffset );
+    var geometry = new PlaneBufferGeometry( quadSize, 4,32, 32, quadSizePros, i, params );
     var m = i % 2 ==0 ?  material1 : material2;
     var plane = new THREE.Mesh( geometry, m );
     plane.translateX(i*quadSize);

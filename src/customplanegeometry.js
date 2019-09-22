@@ -32,7 +32,7 @@ PlaneGeometry.prototype.constructor = PlaneGeometry;
 
 // PlaneBufferGeometry
 
-function PlaneBufferGeometry( width, height, widthSegments, heightSegments, quadSizePros, idx , useOffset) {
+function PlaneBufferGeometry( width, height, widthSegments, heightSegments, quadSizePros, idx , params) {
 
 	BufferGeometry.call( this );
 
@@ -84,10 +84,20 @@ function PlaneBufferGeometry( width, height, widthSegments, heightSegments, quad
 			normals.push( 0, 0, 1 );
 
 			var uv;
-			if(idx % 2 == 0 || !useOffset){
+
+			if(idx % 2 == 0 || !params.useOffset){
 				uv = ix / gridX * quadSizePros + idx*quadSizePros
 			}else{
 				uv = ix / gridX * quadSizePros + idx*quadSizePros - quadSizePros
+				if(params.mirrorOffset){
+					uv = idx*quadSizePros - ix / gridX * quadSizePros
+				}
+			}
+			if(params.mirror){
+				uv = 1 -uv
+			}
+			if(idx % 2 == 0  && params.mirrorHalf){
+				uv = 1 -uv
 			}
 			uvs.push( uv);
 			uvs.push( 1 - ( iy / gridY ) );

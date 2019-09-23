@@ -15,10 +15,11 @@ import {MaterialFolder} from './MaterialFolder'
 
 
 let initVideoOnce = false;
-let materialShader1, materialShader2, timeStart;
+let timeStart;
 let mirror, letter, letter2;
 let speed = 0.01;
 let initalPos = 0.0;
+let materialShaders = []
 
 const init = function(){
 
@@ -111,13 +112,11 @@ const init = function(){
     }
     const now = new Date().getTime();
 
-    if(materialShader2 ){
-      materialShader2.uniforms.time.value = (now - timeStart) / 1000;
-    }
+    materialShaders.forEach((shader) =>{
+      shader.uniforms.time.value = (now - timeStart) / 1000;
 
-    if(materialShader1){
-      materialShader1.uniforms.time.value = (now - timeStart) / 1000;
-    }
+    })
+
 
     if(letter){
     //  var axis = new THREE.Vector3(0, -50, 0).normalize();
@@ -246,7 +245,7 @@ function initMaterial1(timeStart, texture, gui, name){
     shader.vertexShader = meshphysical_vert;
     shader.fragmentShader = meshphysical_frag;
 
-    materialShader1 = shader;
+    materialShaders.push(shader);
 
     new MaterialFolder(material1, shader, gui, name);
 
@@ -281,7 +280,7 @@ function initMaterial2(timeStart, texture, gui, name){
     //console.log(shader.uniforms);
     shader.vertexShader = meshphysical_vert;
     shader.fragmentShader = meshphysical_frag;
-    materialShader2 = shader;
+    materialShaders.push(shader);
     //console.log("mater")
 
     new MaterialFolder(material2, shader, gui, name);

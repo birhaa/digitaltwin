@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "2e2cc26c2b2d94f0d4044cba20765b07",
+    "revision": "c390309a7d98c2279181c5f183dbc8d4",
     "url": "/digitaltwin/index.html"
   },
   {
-    "revision": "472db4ade09e0b558b27",
+    "revision": "a078e919533b65f9fb63",
     "url": "/digitaltwin/static/css/main.2cce8147.chunk.css"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/digitaltwin/static/js/2.a4777295.chunk.js"
   },
   {
-    "revision": "472db4ade09e0b558b27",
-    "url": "/digitaltwin/static/js/main.6a4851f8.chunk.js"
+    "revision": "a078e919533b65f9fb63",
+    "url": "/digitaltwin/static/js/main.457703fa.chunk.js"
   },
   {
     "revision": "258c96a563f80ed882c2",

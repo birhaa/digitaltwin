@@ -12,6 +12,7 @@ import bumpimg from "./bumpmap.jpg"
 import alphaimg from "./alpha.jpg"
 import alphaimg2 from "./alpha2.jpg"
 import {MaterialFolder} from './MaterialFolder'
+import {MainFolder} from './MainFolder'
 
 
 let initVideoOnce = false;
@@ -20,6 +21,9 @@ let mirror, letter, letter2;
 let speed = 0.01;
 let initalPos = 0.0;
 let materialShaders = []
+
+const gui = new dat.GUI();
+let mainFolder, folder1, folder2, folder3, folder4;
 
 const init = function(){
 
@@ -51,20 +55,6 @@ const init = function(){
   // FUN STARTS HERE
   // ------------------------------------------------
 
-  const gui = new dat.GUI();
-
-  var params = {
-    nCols : 8,
-    nColsMask : 8,
-    useOffset : false,
-    mirror : false,
-    mirrorHalf : false,
-    mirrorOffset : false,
-    mask : true,
-    animationSpeed : 0
-
-  }
-
   // Render Loop
   var render = function () {
     requestAnimationFrame( render );
@@ -73,33 +63,12 @@ const init = function(){
       timeStart = new Date().getTime();
 
       var texture = initVideoTexture();
-
-      var mainFolder = gui.addFolder( 'MAIN' );
-      mainFolder
-      .add(params, 'nCols', 1, 100, 1)
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      mainFolder
-      .add(params, 'nColsMask', 1, 100, 1)
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      mainFolder.add(params, 'mirror' )
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      initPlane(texture, mainFolder, scene, params)
-      mainFolder.add(params, 'mirrorHalf' )
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      initPlane(texture, mainFolder, scene, params)
-      mainFolder.add(params, 'useOffset' )
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      initPlane(texture, mainFolder, scene, params)
-      mainFolder.add(params, 'mirrorOffset' )
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      mainFolder.add(params, 'mask' )
-      .onChange( () => {initPlane(texture, mainFolder, scene, params)} );
-      mainFolder.add(params, 'animationSpeed', 0, 5,0.1 )
-
-
-      initPlane(texture, mainFolder, scene, params)
-      mainFolder.open();
-
+      mainFolder = new MainFolder(gui, "MAIN" );
+      folder1 = new MaterialFolder( mainFolder.getFolder(), "MATERIAL 1");
+      folder2 = new MaterialFolder( mainFolder.getFolder(), "MATERIAL 2");
+      folder3 = new MaterialFolder( mainFolder.getFolder(), "MASK MATERIAL 1");
+      folder4 = new MaterialFolder( mainFolder.getFolder(), "MASK MATERIAL 2");
+      mainFolder.initProps((mainFolder, params) => { initPlane(texture, mainFolder, scene, params)})
 
       var light = new THREE.AmbientLight( 0xffffff ); // soft white light
       scene.add( light );
@@ -117,22 +86,12 @@ const init = function(){
 
     })
 
-
-    if(letter){
-    //  var axis = new THREE.Vector3(0, -50, 0).normalize();
-    //  letter.rotateOnAxis(axis, 0.01);
-      letter.rotateY(0.01);
-    }
-
     if(letter2){
-
-      //console.log(initalPos, letter2.position.x - initalPos)
       if(letter2.position.x - initalPos > 2 || letter2.position.x - initalPos < -2)
-        params.animationSpeed = -params.animationSpeed;
-      letter2.translateX(params.animationSpeed/100);
-
+        mainFolder.getSettings().animationSpeed = -mainFolder.getSettings().animationSpeed;
+      letter2.translateX(mainFolder.getSettings().animationSpeed/100);
     }
-    // Render the scene
+
     renderer.render(scene, camera);
   }
 
@@ -151,8 +110,8 @@ function initPlane(texture, mainFolder, scene, params){
 
   mirror = new THREE.Object3D()
 
-  var material1 = initMaterial1(timeStart, texture, mainFolder, "MATERIAL 1");
-  var material2 = initMaterial2(timeStart, texture, mainFolder, "MATERIAL 2");
+  var material1 = initMaterial1(timeStart, texture, folder1 );
+  var material2 = initMaterial2(timeStart, texture, folder2 );
   material1.transparent = false// params.mask1;
   material2.transparent = false// params.mask1;
 
@@ -177,8 +136,8 @@ function initPlane(texture, mainFolder, scene, params){
     var planeSize2 = 6;
     var quadSize2 = planeSize2*quadSizePros2;
 
-    var material3 = initMaterial1(timeStart, texture, mainFolder, "MATERIAL MASK 1");
-    var material4 = initMaterial2(timeStart, texture, mainFolder, "MATERIAL MASK 2");
+    var material3 = initMaterial1(timeStart, texture, folder3);
+    var material4 = initMaterial2(timeStart, texture, folder4);
     var alphamap = new THREE.TextureLoader().load( alphaimg2 );
     material3.alphaMap = alphamap
     material4.alphaMap = alphamap
@@ -221,33 +180,33 @@ function initVideoTexture(){
   return texture;
 }
 
-function initMaterial1(timeStart, texture, gui, name){
+function initMaterial1(timeStart, texture, folder){
   var dismap = new THREE.TextureLoader().load( bumpimg );
   var bumpmap = new THREE.TextureLoader().load( bumpimg );
   var alphamap = new THREE.TextureLoader().load( alphaimg );
   var material1 = new THREE.MeshStandardMaterial( { depthWrite: false, depthTest: false, transparent: true, alphaMap : alphamap, normalMap: bumpmap, displacementMap: dismap,displacementScale:0.1, metalness: 0.5, map: texture, color: 0xffffff, side: THREE.DoubleSide} );
 
   material1.onBeforeCompile = function( shader ) {
+    let settings = folder.getSettings();
+
+
     shader.uniforms.time = { value: timeStart };
-    shader.uniforms.size = { value : 0.0};
-    shader.uniforms.playWave = {value : false};
-    shader.uniforms.waveSpeed = {value : 0.0};
-    shader.uniforms.waveFrequency = {value : 0.0};
-    shader.uniforms.waveSize = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
-    shader.uniforms.useOffset = {value : true};
-    shader.uniforms.rainbow1Dir = new THREE.Uniform(new THREE.Vector3(0.0,0.0,0.0))
-    shader.uniforms.rainbow2Dir = new THREE.Uniform(new THREE.Vector3(0.0,0.0,0.0))
-    shader.uniforms.blurRadius1 = {value : 0.0};
-    shader.uniforms.blurRes1 = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
-    shader.uniforms.blurRadius2 = {value : 0.0};
-    shader.uniforms.blurRes2 = new THREE.Uniform(new THREE.Vector2(0.0,0.0))
+    shader.uniforms.size = { value : settings.stripes};
+    shader.uniforms.playWave = {value : settings.playWave};
+    shader.uniforms.waveSpeed = {value : settings.waveSpeed};
+    shader.uniforms.waveFrequency = {value : settings.waveFrequency};
+    shader.uniforms.waveSize = new THREE.Uniform(new THREE.Vector2(settings.waveSizeX,settings.waveSizeY))
+    shader.uniforms.useOffset = {value : settings.useOffset};
+    shader.uniforms.rainbow1Dir = new THREE.Uniform(new THREE.Vector3(settings.rainbowX,settings.rainbowY,settings.rainbowZ))
+    shader.uniforms.blurRadius1 = {value : settings.blurRadius};
+    shader.uniforms.blurRes1 = new THREE.Uniform(new THREE.Vector2(settings.blurResX,settings.blurResY))
 
     shader.vertexShader = meshphysical_vert;
     shader.fragmentShader = meshphysical_frag;
 
     materialShaders.push(shader);
+    folder.initShaderProps(material1, shader);
 
-    new MaterialFolder(material1, shader, gui, name);
 
   };
 
@@ -255,7 +214,7 @@ function initMaterial1(timeStart, texture, gui, name){
   return material1;
 }
 
-function initMaterial2(timeStart, texture, gui, name){
+function initMaterial2(timeStart, texture, folder){
 
   var dismap = new THREE.TextureLoader().load( bumpimg );
   var bumpmap = new THREE.TextureLoader().load( bumpimg );
@@ -281,9 +240,8 @@ function initMaterial2(timeStart, texture, gui, name){
     shader.vertexShader = meshphysical_vert;
     shader.fragmentShader = meshphysical_frag;
     materialShaders.push(shader);
+    folder.initShaderProps(material2, shader);
     //console.log("mater")
-
-    new MaterialFolder(material2, shader, gui, name);
 
 
   };

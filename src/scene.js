@@ -1,10 +1,7 @@
-
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {PlaneBufferGeometry} from'./customplanegeometry.js'
 import * as dat from 'dat.gui';
-import meshbasic_vert from './meshbasic_vert.glsl.js';
-import meshbasic_frag from './mesbasic_frag.glsl.js';
 import meshphysical_vert from './meshphysical_vert.glsl.js';
 import meshphysical_frag from './meshphysical_frag.glsl.js';
 import testimg from "./test.jpg"

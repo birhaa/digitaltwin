@@ -33,7 +33,7 @@ const init = function(){
   // Create a basic perspective camera
   var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
   camera.position.z = 4;
-  new OrbitControls(camera);
+  //new OrbitControls(camera);
 
   // Create a renderer with Antialiasing
   var renderer = new THREE.WebGLRenderer({antialias:true});

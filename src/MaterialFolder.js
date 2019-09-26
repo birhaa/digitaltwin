@@ -11,34 +11,62 @@ dat.GUI.prototype.removeFolder = function(name) {
     this.onResize();
 };
 
+const startSettingsMaterial1 ={
+  useOffset: true,
+  stripes: 0.0,
+  metalness: 0.4,
+  roughness: 0.4,
+  ambientIntensity: 0.2,
+  aoMapIntensity: 1.0,
+  envMapIntensity: 1.0,
+  displacementScale: 0.1,
+  normalScale: 0.0,
+  color1: 0xffffff,
+  playWave: false,
+  waveSpeed: 1.0,
+  waveSizeX: 0.0,
+  waveSizeY: 0.0,
+  waveFrequency: 1.0,
+  rainbowX: 0.0,
+  rainbowY: 0.0,
+  rainbowZ: 0.0,
+  blurRadius: 0.0,
+  blurResX: 0.0,
+  blurResY: 0.0
+}
+
+const startSettingsMaterial2 ={
+  useOffset: true,
+  stripes: 0.0,
+  metalness: 0.0,
+  roughness: 0.0,
+  ambientIntensity: 0.0,
+  aoMapIntensity: 1.0,
+  envMapIntensity: 1.0,
+  displacementScale: 0.0,
+  normalScale: 0.0,
+  color1: 0xffffff,
+  playWave: false,
+  waveSpeed: 1.0,
+  waveSizeX: 0.0,
+  waveSizeY: 0.0,
+  waveFrequency: 1.0,
+  rainbowX: 0.0,
+  rainbowY: 0.0,
+  rainbowZ: 0.0,
+  blurRadius: 0.0,
+  blurResX: 0.0,
+  blurResY: 0.0
+}
+
 class MaterialFolder {
-    constructor(gui, name) {
+    constructor(gui, name, isMaterial1) {
         this.gui = gui;
         this.name = name;
 
-        this.settings = {
-            useOffset: true,
-            stripes: 0.0,
-            metalness: 1.0,
-            roughness: 0.4,
-            ambientIntensity: 0.2,
-            aoMapIntensity: 1.0,
-            envMapIntensity: 1.0,
-            displacementScale: 0.1,
-            normalScale: 0.0,
-            color1: 0xffffff,
-            playWave: false,
-            waveSpeed: 1.0,
-            waveSizeX: 0.0,
-            waveSizeY: 0.0,
-            waveFrequency: 1.0,
-            rainbowX: 0.0,
-            rainbowY: 0.0,
-            rainbowZ: 0.0,
-            blurRadius: 0.0,
-            blurResX: 0.0,
-            blurResY: 0.0
-        };
+        this.settings = isMaterial1 ? startSettingsMaterial1 : startSettingsMaterial2
+        console.log(this.settings)
+
 
         this.params = {
             color1: 0xffffff,

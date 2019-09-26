@@ -18,7 +18,7 @@ var params = {
     mirror: false,
     mirrorHalf: false,
     mirrorOffset: false,
-    mask: true,
+    mask: false,
     animationSpeed: 0
 };
 

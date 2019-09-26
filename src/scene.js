@@ -64,8 +64,8 @@ const init = function() {
 
             var texture = initVideoTexture();
             mainFolder = new MainFolder(gui, 'MAIN');
-            folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1');
-            folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2');
+            folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
+            folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
             folder3 = new MaterialFolder(
                 mainFolder.getFolder(),
                 'MASK MATERIAL 1'
@@ -111,13 +111,12 @@ const init = function() {
 
 function initPlane(texture, mainFolder, scene, params) {
     if (mirror) scene.remove(mirror);
-
     if (letter2) scene.remove(letter2);
 
     mirror = new THREE.Object3D();
 
     var material1 = initMaterial1(timeStart, texture, folder1);
-    var material2 = initMaterial2(timeStart, texture, folder2);
+    var material2 = initMaterial1(timeStart, texture, folder2);
     material1.transparent = false; // params.mask1;
     material2.transparent = false; // params.mask1;
 
@@ -149,7 +148,7 @@ function initPlane(texture, mainFolder, scene, params) {
         var quadSize2 = planeSize2 * quadSizePros2;
 
         var material3 = initMaterial1(timeStart, texture, folder3);
-        var material4 = initMaterial2(timeStart, texture, folder4);
+        var material4 = initMaterial1(timeStart, texture, folder4);
         var alphamap = new THREE.TextureLoader().load(alphaimg2);
         material3.alphaMap = alphamap;
         material4.alphaMap = alphamap;
@@ -188,7 +187,7 @@ function initPlane(texture, mainFolder, scene, params) {
 
 function initVideoTexture() {
     var video = document.getElementById('video');
-    console.log('video', video);
+    //console.log('video', video);
     var texture = new THREE.VideoTexture(video);
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
@@ -197,7 +196,8 @@ function initVideoTexture() {
     return texture;
 }
 
-function initMaterial1(timeStart, texture, folder) {
+function initMaterial1(timeStart, texture, folder, isMaterial2) {
+    let settings = folder.getSettings();
     var dismap = new THREE.TextureLoader().load(bumpimg);
     var bumpmap = new THREE.TextureLoader().load(bumpimg);
     var alphamap = new THREE.TextureLoader().load(alphaimg);
@@ -208,15 +208,14 @@ function initMaterial1(timeStart, texture, folder) {
         alphaMap: alphamap,
         normalMap: bumpmap,
         displacementMap: dismap,
-        displacementScale: 0.1,
-        metalness: 0.5,
+        displacementScale: settings.displacementScale,
+        metalness: settings.metalness,
         map: texture,
         color: 0xffffff,
         side: THREE.DoubleSide
     });
 
     material1.onBeforeCompile = function(shader) {
-        let settings = folder.getSettings();
 
         shader.uniforms.time = { value: timeStart };
         shader.uniforms.size = { value: settings.stripes };
@@ -247,61 +246,6 @@ function initMaterial1(timeStart, texture, folder) {
     };
 
     return material1;
-}
-
-function initMaterial2(timeStart, texture, folder) {
-    var dismap = new THREE.TextureLoader().load(bumpimg);
-    var bumpmap = new THREE.TextureLoader().load(bumpimg);
-    var alphamap = new THREE.TextureLoader().load(alphaimg);
-    var material2 = new THREE.MeshStandardMaterial({
-        depthWrite: false,
-        depthTest: false,
-        transparent: true,
-        alphaMap: alphamap,
-        normalMap: bumpmap,
-        normalScale: THREE.Vector2(0.0, 0.0),
-        displacementMap: dismap,
-        displacementScale: 0.0,
-        metalness: 0.0,
-        map: texture,
-        color: 0xffffff,
-        side: THREE.DoubleSide
-    });
-
-    material2.onBeforeCompile = function(shader) {
-        shader.uniforms.time = { value: timeStart };
-        shader.uniforms.size = { value: 0.0 };
-        shader.uniforms.playWave = { value: false };
-        shader.uniforms.waveSpeed = { value: 0.0 };
-        shader.uniforms.waveFrequency = { value: 0.0 };
-        shader.uniforms.waveSize = new THREE.Uniform(
-            new THREE.Vector2(0.0, 0.0)
-        );
-        shader.uniforms.useOffset = { value: true };
-        shader.uniforms.rainbow1Dir = new THREE.Uniform(
-            new THREE.Vector3(0.0, 0.0, 0.0)
-        );
-        shader.uniforms.rainbow2Dir = new THREE.Uniform(
-            new THREE.Vector3(0.0, 0.0, 0.0)
-        );
-        shader.uniforms.blurRadius1 = { value: 0.0 };
-        shader.uniforms.blurRes1 = new THREE.Uniform(
-            new THREE.Vector2(0.0, 0.0)
-        );
-        shader.uniforms.blurRadius2 = { value: 0.0 };
-        shader.uniforms.blurRes2 = new THREE.Uniform(
-            new THREE.Vector2(0.0, 0.0)
-        );
-
-        //console.log(shader.uniforms);
-        shader.vertexShader = meshphysical_vert;
-        shader.fragmentShader = meshphysical_frag;
-        materialShaders.push(shader);
-        folder.initShaderProps(material2, shader);
-        //console.log("mater")
-    };
-
-    return material2;
 }
 
 function playVideo(video) {

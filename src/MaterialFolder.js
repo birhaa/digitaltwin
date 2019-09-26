@@ -63,10 +63,7 @@ class MaterialFolder {
     constructor(gui, name, isMaterial1) {
         this.gui = gui;
         this.name = name;
-
         this.settings = isMaterial1 ? startSettingsMaterial1 : startSettingsMaterial2
-        console.log(this.settings)
-
 
         this.params = {
             color1: 0xffffff,

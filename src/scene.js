@@ -13,7 +13,7 @@ import { MainFolder } from './MainFolder';
 
 let initVideoOnce = false;
 let timeStart;
-let mirror, letter, letter2;
+let mirror, letter, mask;
 let speed = 0.01;
 let initalPos = 0.0;
 let materialShaders = [];
@@ -58,49 +58,24 @@ const init = function() {
     // Render Loop
     var render = function() {
         requestAnimationFrame(render);
-
-        if (document.getElementById('video') != null && !initVideoOnce) {
-            timeStart = new Date().getTime();
-
-            var texture = initVideoTexture();
-            mainFolder = new MainFolder(gui, 'MAIN');
-            folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
-            folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
-            folder3 = new MaterialFolder(
-                mainFolder.getFolder(),
-                'MASK MATERIAL 1'
-            );
-            folder4 = new MaterialFolder(
-                mainFolder.getFolder(),
-                'MASK MATERIAL 2'
-            );
-            mainFolder.initProps((mainFolder, params) => {
-                initPlane(texture, mainFolder, scene, params);
-            });
-
-            var light = new THREE.AmbientLight(0xffffff); // soft white light
-            scene.add(light);
-
-            var light2 = new THREE.PointLight(0xffffff, 1, 80);
-            light2.position.set(0, 0, 50);
-            scene.add(light2);
-
-            initVideoOnce = true;
-        }
         const now = new Date().getTime();
 
+        //TODO: Find a better way to init when loaded
+        if (document.getElementById('video') != null && !initVideoOnce) {
+            initVideoScene(scene)
+            initVideoOnce = true;
+        }
+
+        //Update shader materials
         materialShaders.forEach(shader => {
             shader.uniforms.time.value = (now - timeStart) / 1000;
         });
 
-        if (letter2) {
-            if (
-                letter2.position.x - initalPos > 2 ||
-                letter2.position.x - initalPos < -2
-            )
-                mainFolder.getSettings().animationSpeed = -mainFolder.getSettings()
-                    .animationSpeed;
-            letter2.translateX(mainFolder.getSettings().animationSpeed / 100);
+        //Update mask animation
+        if (mask) {
+            if (  mask.position.x - initalPos > 2 ||  mask.position.x - initalPos < -2)
+                mainFolder.getSettings().animationSpeed = -mainFolder.getSettings().animationSpeed;
+            mask.translateX(mainFolder.getSettings().animationSpeed / 100);
         }
 
         renderer.render(scene, camera);
@@ -109,14 +84,41 @@ const init = function() {
     render();
 };
 
-function initPlane(texture, mainFolder, scene, params) {
+function initVideoScene(scene){
+  timeStart = new Date().getTime();
+
+  var texture = initVideoTexture();
+  mainFolder = new MainFolder(gui, 'MAIN');
+  folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
+  folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
+  folder3 = new MaterialFolder(
+      mainFolder.getFolder(),
+      'MASK MATERIAL 1'
+  );
+  folder4 = new MaterialFolder(
+      mainFolder.getFolder(),
+      'MASK MATERIAL 2'
+  );
+  mainFolder.initProps((mainFolder, params) => {
+      initMirror(texture, mainFolder, scene, params);
+  });
+
+  var light = new THREE.AmbientLight(0xffffff); // soft white light
+  scene.add(light);
+
+  var light2 = new THREE.PointLight(0xffffff, 1, 80);
+  light2.position.set(0, 0, 50);
+  scene.add(light2);
+}
+
+function initMirror(texture, mainFolder, scene, params) {
     if (mirror) scene.remove(mirror);
-    if (letter2) scene.remove(letter2);
+    if (mask) scene.remove(mask);
 
     mirror = new THREE.Object3D();
 
-    var material1 = initMaterial1(timeStart, texture, folder1);
-    var material2 = initMaterial1(timeStart, texture, folder2);
+    var material1 = initMaterial(timeStart, texture, folder1);
+    var material2 = initMaterial(timeStart, texture, folder2);
     material1.transparent = false; // params.mask1;
     material2.transparent = false; // params.mask1;
 
@@ -141,48 +143,50 @@ function initPlane(texture, mainFolder, scene, params) {
         mirror.add(plane);
     }
 
-    if (params.mask) {
-        var numberOfQuads2 = params.nColsMask;
-        var quadSizePros2 = 1.0 / numberOfQuads2;
-        var planeSize2 = 6;
-        var quadSize2 = planeSize2 * quadSizePros2;
-
-        var material3 = initMaterial1(timeStart, texture, folder3);
-        var material4 = initMaterial1(timeStart, texture, folder4);
-        var alphamap = new THREE.TextureLoader().load(alphaimg2);
-        material3.alphaMap = alphamap;
-        material4.alphaMap = alphamap;
-        material3.transparent = true;
-        material4.transparent = true;
-
-        letter2 = new THREE.Group();
-
-        for (var i = 0; i < numberOfQuads2; i++) {
-            //console.log('quadSize', quadSizePros2 + ' ' + i);
-            var geometry = new PlaneBufferGeometry(
-                quadSize2,
-                4,
-                32,
-                32,
-                quadSizePros2,
-                i,
-                params
-            );
-            var m = i % 2 == 0 ? material3 : material4;
-            var plane = new THREE.Mesh(geometry, m);
-            plane.translateX(i * quadSize2);
-            letter2.add(plane);
-        }
-        letter2.translateX(-planeSize2 / 2 + quadSize2 / 2);
-        initalPos = letter2.position.x;
-        //mirror.add(letter2);
-        scene.add(letter2);
-    }
-    //new THREE.Box3().setFromObject( letter ).getCenter( letter.position ).multiplyScalar( - 1 );
-
+    initmask(scene, params, texture)
+    
     mirror.translateX(-planeSize / 2 + quadSize / 2);
-
     scene.add(mirror);
+}
+
+function initmask(scene, params, texture){
+  if (params.mask) {
+      var numberOfQuads2 = params.nColsMask;
+      var quadSizePros2 = 1.0 / numberOfQuads2;
+      var planeSize2 = 6;
+      var quadSize2 = planeSize2 * quadSizePros2;
+
+      var material3 = initMaterial(timeStart, texture, folder3);
+      var material4 = initMaterial(timeStart, texture, folder4);
+      var alphamap = new THREE.TextureLoader().load(alphaimg2);
+      material3.alphaMap = alphamap;
+      material4.alphaMap = alphamap;
+      material3.transparent = true;
+      material4.transparent = true;
+
+      mask = new THREE.Group();
+
+      for (var i = 0; i < numberOfQuads2; i++) {
+          //console.log('quadSize', quadSizePros2 + ' ' + i);
+          var geometry = new PlaneBufferGeometry(
+              quadSize2,
+              4,
+              32,
+              32,
+              quadSizePros2,
+              i,
+              params
+          );
+          var m = i % 2 == 0 ? material3 : material4;
+          var plane = new THREE.Mesh(geometry, m);
+          plane.translateX(i * quadSize2);
+          mask.add(plane);
+      }
+      mask.translateX(-planeSize2 / 2 + quadSize2 / 2);
+      initalPos = mask.position.x;
+      //mirror.add(mask);
+      scene.add(mask);
+  }
 }
 
 function initVideoTexture() {
@@ -196,7 +200,7 @@ function initVideoTexture() {
     return texture;
 }
 
-function initMaterial1(timeStart, texture, folder, isMaterial2) {
+function initMaterial(timeStart, texture, folder, isMaterial2) {
     let settings = folder.getSettings();
     var dismap = new THREE.TextureLoader().load(bumpimg);
     var bumpmap = new THREE.TextureLoader().load(bumpimg);

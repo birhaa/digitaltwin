@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlaneBufferGeometry } from './customplanegeometry.js';
 import * as dat from 'dat.gui';
-import meshphysical_vert from './meshphysical_vert.glsl';
-import meshphysical_frag from './meshphysical_frag.glsl';
+import meshphysical_vert from './shaders/meshphysical_vert.glsl';
+import meshphysical_frag from './shaders/meshphysical_frag.glsl';
 import bumpimg from './images/bumpmap.jpg';
 import alphaimg from './images/alpha.jpg';
 import alphaimg2 from './images/alpha2.jpg';
@@ -126,7 +126,7 @@ function initPlane(texture, mainFolder, scene, params) {
     var planeSize = 6;
     var quadSize = planeSize * quadSizePros;
     for (var i = 0; i < numberOfQuads; i++) {
-        console.log('quadSize', quadSizePros + ' ' + i);
+        //console.log('quadSize', quadSizePros + ' ' + i);
         var geometry = new PlaneBufferGeometry(
             quadSize,
             4,
@@ -159,7 +159,7 @@ function initPlane(texture, mainFolder, scene, params) {
         letter2 = new THREE.Group();
 
         for (var i = 0; i < numberOfQuads2; i++) {
-            console.log('quadSize', quadSizePros2 + ' ' + i);
+            //console.log('quadSize', quadSizePros2 + ' ' + i);
             var geometry = new PlaneBufferGeometry(
                 quadSize2,
                 4,

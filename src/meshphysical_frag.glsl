@@ -1,4 +1,3 @@
-export default /* glsl */ `
 #define STANDARD
 
 //BIRGITTE UNIFORMS
@@ -303,4 +302,3 @@ void main() {
 	#include <dithering_fragment>
 
 }
-`;

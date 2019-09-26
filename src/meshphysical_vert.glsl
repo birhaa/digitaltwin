@@ -1,4 +1,3 @@
-export default /* glsl */ `
 #define STANDARD
 
 varying vec3 vViewPosition;
@@ -87,4 +86,3 @@ void main() {
 	#include <fog_vertex>
 
 }
-`;

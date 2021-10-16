@@ -134,11 +134,8 @@ vec2 calculateNewUvs(vec2 vUv, bool isMaterial2){
 	return vUv3;
 }
 
-vec3 calculateRainbow(vec3 uv_tangent){
+vec3 calculateRainbow(vec3 uv_tangent, vec3 L, vec3 V){
 	float d = 2400.0; //nm
-
-	vec3 L = lightDir;
-	vec3 V = viewDir;
 
 	vec3 H = L + V;
 	float u = abs(dot(uv_tangent, H));
@@ -258,12 +255,15 @@ void main() {
 	//BIRGITTE
 
 	vec3 reflectionColor;
+	vec3 reflectionColor2;
 	if(isMaterial2) {
-		reflectionColor = calculateRainbow(rainbow2Dir);
+		reflectionColor = calculateRainbow(rainbow2Dir, lightDir, viewDir);
+		reflectionColor2 = vec3(0.0,0.0,0.0);
 	}else{
-		reflectionColor = calculateRainbow(rainbow1Dir);
+		reflectionColor = calculateRainbow(rainbow1Dir, lightDir, viewDir);
+		reflectionColor2 = calculateRainbow(rainbow1Dir, vec3(0.0, 1.0, 1.0), viewDir);
 	}
-	diffuseColor.rgb = diffuseColor.rgb + reflectionColor;
+	diffuseColor.rgb = diffuseColor.rgb + reflectionColor + reflectionColor2;
 
 	//END BIRGITTE
 

@@ -32,6 +32,7 @@ varying vec3 vViewPosition;
 varying vec3 lightDir;
 varying vec3 viewDir;
 uniform float time;
+uniform vec3 lightPos;
 
 //END BIRGITTE
 
@@ -71,12 +72,12 @@ void main() {
 	vViewPosition = - mvPosition.xyz;
 
 	//BIRGITTE
-	vec3 lightPos = vec3(0.0,0.0,1.0);
-	vec3 eyePos = vec3(0.0,0.0,1.0);//(viewMatrix * vec4(0.0,0.0,1.0,1.0)).xyz;//cameraPosition;//viewMatrix * vec4(cameraPosition,1.0)).xyz;
+ 	// vec3 lightPos2 = vec3(0.0,0.0,1.0);
+	vec3 eyePos = vec3(1.0,0.0,3.5);//(viewMatrix * vec4(0.0,0.0,1.0,1.0)).xyz;//cameraPosition;//viewMatrix * vec4(cameraPosition,1.0)).xyz;
 
 	vec3 viewPos = gl_Position.xyz;
-	vec3 L = normalize(lightPos - viewPos);
-	vec3 V = normalize(eyePos- viewPos);
+	vec3 L = normalize(eyePos - viewPos);
+	vec3 V = normalize(lightPos - viewPos);
 	lightDir = L;
 	viewDir = V;
 	//END BIRGITTE

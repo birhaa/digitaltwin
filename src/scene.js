@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlaneBufferGeometry } from './customplanegeometry.js';
 import * as dat from 'dat.gui';
+import * as handTrack from 'handtrackjs';
 import meshphysical_vert from './shaders/meshphysical_vert.glsl';
 import meshphysical_frag from './shaders/meshphysical_frag.glsl';
 import bumpimg from './images/bumpmap.jpg';
@@ -10,6 +11,8 @@ import alphaimg2 from './images/alpha2.jpg';
 
 import { MaterialFolder } from './MaterialFolder';
 import { MainFolder } from './MainFolder';
+import { program1, program2 } from './Settings.js';
+import { Vector3 } from 'three';
 
 let initVideoOnce = false;
 let timeStart;
@@ -20,8 +23,17 @@ let materialShaders = [];
 
 const gui = new dat.GUI();
 let mainFolder, folder1, folder2, folder3, folder4;
+let material1;
+let handPredictionModel;
 
-const init = function() {
+const modelParams = {
+    flipHorizontal: true, // flip e.g for video
+    maxNumBoxes: 20, // maximum number of boxes to detect
+    iouThreshold: 0.5, // ioU threshold for non-max suppression
+    scoreThreshold: 0.6, // confidence threshold for predictions.
+};
+
+const init = function () {
     // ------------------------------------------------
     // BASIC SETUP
     // ------------------------------------------------
@@ -56,62 +68,106 @@ const init = function() {
     // ------------------------------------------------
 
     // Render Loop
-    var render = function() {
+    var render = function () {
         requestAnimationFrame(render);
         const now = new Date().getTime();
 
         //TODO: Find a better way to init when loaded
         if (document.getElementById('video') != null && !initVideoOnce) {
-            initVideoScene(scene)
+            initVideoScene(scene);
             initVideoOnce = true;
         }
 
+        var video = document.getElementById('video');
+        if (video && video.srcObject && handPredictionModel) {
+            // console.log(video.srcObject.getVideoTracks());
+            const track = video.srcObject.getVideoTracks()[0];
+            const imageCapture = new ImageCapture(track);
+            grabImage(imageCapture);
+        }
+
         //Update shader materials
-        materialShaders.forEach(shader => {
+        materialShaders.forEach((shader) => {
             shader.uniforms.time.value = (now - timeStart) / 1000;
         });
 
         //Update mask animation
         if (mask) {
-            if (  mask.position.x - initalPos > 2 ||  mask.position.x - initalPos < -2)
-                mainFolder.getSettings().animationSpeed = -mainFolder.getSettings().animationSpeed;
+            if (
+                mask.position.x - initalPos > 2 ||
+                mask.position.x - initalPos < -2
+            )
+                mainFolder.getSettings().animationSpeed =
+                    -mainFolder.getSettings().animationSpeed;
             mask.translateX(mainFolder.getSettings().animationSpeed / 100);
         }
 
         renderer.render(scene, camera);
     };
 
+    // Load the model.
+    handTrack.load().then((model) => {
+        // detect objects in the image.
+        console.log('model loaded', model);
+        handPredictionModel = model;
+    });
     render();
 };
 
-function initVideoScene(scene){
-  timeStart = new Date().getTime();
+function initVideoScene(scene) {
+    timeStart = new Date().getTime();
 
-  var texture = initVideoTexture();
-  mainFolder = new MainFolder(gui, 'MAIN');
-  folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
-  folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
-  folder3 = new MaterialFolder(
-      mainFolder.getFolder(),
-      'MASK MATERIAL 1'
-  );
-  folder4 = new MaterialFolder(
-      mainFolder.getFolder(),
-      'MASK MATERIAL 2'
-  );
-  mainFolder.initProps((mainFolder, params) => {
-      initMirror(texture, mainFolder, scene, params);
-  });
+    var texture = initVideoTexture();
+    mainFolder = new MainFolder(gui, 'MAIN');
+    folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
+    folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
+    folder3 = new MaterialFolder(mainFolder.getFolder(), 'MASK MATERIAL 1');
+    folder4 = new MaterialFolder(mainFolder.getFolder(), 'MASK MATERIAL 2');
+    mainFolder.initProps((mainFolder, params) => {
+        console.log('params', params);
+        initMirror(texture, scene, params);
+    });
 
-  var light = new THREE.AmbientLight(0xffffff); // soft white light
-  scene.add(light);
+    var text = {
+        program: 'program',
+    };
+    gui.add(text, 'program', {
+        RainbowsStripy: '1',
+        UnicornFlowerPuff: '2',
+        dragonSteel: '3',
+    }).onChange((test) => {
+        console.log(test);
+        let params;
+        switch (test) {
+            case '1':
+                params = program1.params;
+                folder1.setSettings(program1.material1);
+                folder2.setSettings(program1.material2);
+                break;
+            case '2':
+                params = program2.params;
+                folder1.setSettings(program2.material1);
+                folder2.setSettings(program2.material2);
+                break;
+            default:
+                params = program1.params;
+                folder1.setSettings(program1.material1);
+                folder1.setSettings(program1.material2);
+                break;
+        }
 
-  var light2 = new THREE.PointLight(0xffffff, 1, 80);
-  light2.position.set(0, 0, 50);
-  scene.add(light2);
+        initMirror(texture, scene, params);
+    });
+
+    var light = new THREE.AmbientLight(0xffffff); // soft white light
+    scene.add(light);
+
+    var light2 = new THREE.PointLight(0xffffff, 1, 80);
+    light2.position.set(0, 0, 50);
+    scene.add(light2);
 }
 
-function initMirror(texture, mainFolder, scene, params) {
+function initMirror(texture, scene, params) {
     if (mirror) scene.remove(mirror);
     if (mask) scene.remove(mask);
 
@@ -143,50 +199,50 @@ function initMirror(texture, mainFolder, scene, params) {
         mirror.add(plane);
     }
 
-    initmask(scene, params, texture)
-    
+    initmask(scene, params, texture);
+
     mirror.translateX(-planeSize / 2 + quadSize / 2);
     scene.add(mirror);
 }
 
-function initmask(scene, params, texture){
-  if (params.mask) {
-      var numberOfQuads2 = params.nColsMask;
-      var quadSizePros2 = 1.0 / numberOfQuads2;
-      var planeSize2 = 6;
-      var quadSize2 = planeSize2 * quadSizePros2;
+function initmask(scene, params, texture) {
+    if (params.mask) {
+        var numberOfQuads2 = params.nColsMask;
+        var quadSizePros2 = 1.0 / numberOfQuads2;
+        var planeSize2 = 6;
+        var quadSize2 = planeSize2 * quadSizePros2;
 
-      var material3 = initMaterial(timeStart, texture, folder3);
-      var material4 = initMaterial(timeStart, texture, folder4);
-      var alphamap = new THREE.TextureLoader().load(alphaimg2);
-      material3.alphaMap = alphamap;
-      material4.alphaMap = alphamap;
-      material3.transparent = true;
-      material4.transparent = true;
+        var material3 = initMaterial(timeStart, texture, folder3);
+        var material4 = initMaterial(timeStart, texture, folder4);
+        var alphamap = new THREE.TextureLoader().load(alphaimg2);
+        material3.alphaMap = alphamap;
+        material4.alphaMap = alphamap;
+        material3.transparent = true;
+        material4.transparent = true;
 
-      mask = new THREE.Group();
+        mask = new THREE.Group();
 
-      for (var i = 0; i < numberOfQuads2; i++) {
-          //console.log('quadSize', quadSizePros2 + ' ' + i);
-          var geometry = new PlaneBufferGeometry(
-              quadSize2,
-              4,
-              32,
-              32,
-              quadSizePros2,
-              i,
-              params
-          );
-          var m = i % 2 == 0 ? material3 : material4;
-          var plane = new THREE.Mesh(geometry, m);
-          plane.translateX(i * quadSize2);
-          mask.add(plane);
-      }
-      mask.translateX(-planeSize2 / 2 + quadSize2 / 2);
-      initalPos = mask.position.x;
-      //mirror.add(mask);
-      scene.add(mask);
-  }
+        for (var i = 0; i < numberOfQuads2; i++) {
+            //console.log('quadSize', quadSizePros2 + ' ' + i);
+            var geometry = new PlaneBufferGeometry(
+                quadSize2,
+                4,
+                32,
+                32,
+                quadSizePros2,
+                i,
+                params
+            );
+            var m = i % 2 == 0 ? material3 : material4;
+            var plane = new THREE.Mesh(geometry, m);
+            plane.translateX(i * quadSize2);
+            mask.add(plane);
+        }
+        mask.translateX(-planeSize2 / 2 + quadSize2 / 2);
+        initalPos = mask.position.x;
+        //mirror.add(mask);
+        scene.add(mask);
+    }
 }
 
 function initVideoTexture() {
@@ -216,12 +272,12 @@ function initMaterial(timeStart, texture, folder, isMaterial2) {
         metalness: settings.metalness,
         map: texture,
         color: 0xffffff,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
     });
 
-    material1.onBeforeCompile = function(shader) {
-
+    material1.onBeforeCompile = function (shader) {
         shader.uniforms.time = { value: timeStart };
+        shader.uniforms.lightPos = { value: new Vector3(0.0, 0.0, 1.0) };
         shader.uniforms.size = { value: settings.stripes };
         shader.uniforms.playWave = { value: settings.playWave };
         shader.uniforms.waveSpeed = { value: settings.waveSpeed };
@@ -255,21 +311,75 @@ function initMaterial(timeStart, texture, folder, isMaterial2) {
 function playVideo(video) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         var constraints = {
-            video: { width: 1280, height: 720, facingMode: 'user' }
+            video: { width: 1280, height: 720, facingMode: 'user' },
         };
         navigator.mediaDevices
             .getUserMedia(constraints)
-            .then(function(stream) {
+            .then(function (stream) {
                 // apply the stream to the video element used in the texture
                 video.srcObject = stream;
                 video.play();
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error('Unable to access the camera/webcam.', error);
             });
     } else {
         console.error('MediaDevices interface not available.');
     }
+}
+
+function grabImage(imageCapture) {
+    imageCapture
+        .grabFrame()
+        .then((imageBitmap) => {
+            handPredictionModel.detect(imageBitmap).then((predictions) => {
+                if (predictions.length > 0) {
+                    // console.log('Predictions: ', predictions);
+                    let closed = predictions.find(
+                        (it) => it.label === 'closed'
+                    );
+                    if (closed) {
+                        console.log('closed', closed);
+                        // materialShaders.forEach(
+                        //     (it) => (it.uniforms.rainbow1Dir.value.z = 0.5)
+                        // );
+                    }
+                    let pinched = predictions.find(
+                        (it) => it.label === 'pinch'
+                    );
+                    if (pinched) {
+                        folder1.getShader().uniforms.nCols = 60;
+
+                        console.log('pinch', pinched);
+                    }
+                    let face = predictions.find((it) => it.label === 'face');
+                    if (face) {
+                        folder1.getShader().uniforms.rainbow1Dir.value.z = 0.5;
+                        const faceSize =
+                            Math.round(
+                                ((face.bbox[2] * face.bbox[3]) / (1000 * 30)) *
+                                    5,
+                                1
+                            ) / 5.0;
+                        // console.log('face', faceSize);
+
+                        materialShaders.forEach((shader) => {
+                            const lpos = new Vector3(
+                                (parseFloat(face.bbox[0]) / window.innerWidth) *
+                                    10,
+                                (parseFloat(face.bbox[1]) /
+                                    window.innerHeight) *
+                                    10,
+                                0
+                            );
+                            // console.log(lpos);
+                            shader.uniforms.lightPos.value = lpos;
+                        });
+                    }
+                }
+            });
+        })
+        .catch((error) => console.log(error));
 }
 
 export default init;

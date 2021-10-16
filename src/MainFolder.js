@@ -1,6 +1,6 @@
 import * as dat from 'dat.gui';
 
-dat.GUI.prototype.removeFolder = function(name) {
+dat.GUI.prototype.removeFolder = function (name) {
     var folder = this.__folders[name];
     if (!folder) {
         return;
@@ -19,7 +19,7 @@ var params = {
     mirrorHalf: false,
     mirrorOffset: false,
     mask: false,
-    animationSpeed: 0
+    animationSpeed: 0,
 };
 
 class MainFolder {

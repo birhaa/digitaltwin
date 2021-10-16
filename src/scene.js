@@ -23,8 +23,14 @@ let materialShaders = [];
 
 const gui = new dat.GUI();
 let mainFolder, folder1, folder2, folder3, folder4;
+let texture, scene;
 let material1;
 let handPredictionModel;
+let programs = [1, 2];
+let currentProgram = 0;
+
+const POINT_THRESHOLD = 20;
+let pointCount = POINT_THRESHOLD;
 
 const modelParams = {
     flipHorizontal: true, // flip e.g for video
@@ -39,7 +45,7 @@ const init = function () {
     // ------------------------------------------------
 
     // Create an empty scene
-    var scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
     // Create a basic perspective camera
     var camera = new THREE.PerspectiveCamera(
@@ -117,7 +123,7 @@ const init = function () {
 function initVideoScene(scene) {
     timeStart = new Date().getTime();
 
-    var texture = initVideoTexture();
+    texture = initVideoTexture();
     mainFolder = new MainFolder(gui, 'MAIN');
     folder1 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 1', true);
     folder2 = new MaterialFolder(mainFolder.getFolder(), 'MATERIAL 2', false);
@@ -136,27 +142,7 @@ function initVideoScene(scene) {
         UnicornFlowerPuff: '2',
         dragonSteel: '3',
     }).onChange((test) => {
-        console.log(test);
-        let params;
-        switch (test) {
-            case '1':
-                params = program1.params;
-                folder1.setSettings(program1.material1);
-                folder2.setSettings(program1.material2);
-                break;
-            case '2':
-                params = program2.params;
-                folder1.setSettings(program2.material1);
-                folder2.setSettings(program2.material2);
-                break;
-            default:
-                params = program1.params;
-                folder1.setSettings(program1.material1);
-                folder1.setSettings(program1.material2);
-                break;
-        }
-
-        initMirror(texture, scene, params);
+        changeProgram(test);
     });
 
     var light = new THREE.AmbientLight(0xffffff); // soft white light
@@ -336,22 +322,43 @@ function grabImage(imageCapture) {
             handPredictionModel.detect(imageBitmap).then((predictions) => {
                 if (predictions.length > 0) {
                     // console.log('Predictions: ', predictions);
-                    let closed = predictions.find(
-                        (it) => it.label === 'closed'
-                    );
-                    if (closed) {
-                        console.log('closed', closed);
-                        // materialShaders.forEach(
-                        //     (it) => (it.uniforms.rainbow1Dir.value.z = 0.5)
-                        // );
-                    }
-                    let pinched = predictions.find(
-                        (it) => it.label === 'pinch'
-                    );
-                    if (pinched) {
-                        folder1.getShader().uniforms.nCols = 60;
+                    // let closed = predictions.find(
+                    //     (it) => it.label === 'closed'
+                    // );
+                    // if (closed) {
+                    //     console.log('closed', closed);
+                    //     // materialShaders.forEach(
+                    //     //     (it) => (it.uniforms.rainbow1Dir.value.z = 0.5)
+                    //     // );
+                    // }
+                    // let pinched = predictions.find(
+                    //     (it) => it.label === 'pinch'
+                    // );
+                    // if (pinched) {
+                    //     folder1.getShader().uniforms.nCols = 60;
 
-                        console.log('pinch', pinched);
+                    //     console.log('pinch', pinched);
+                    // }
+
+                    let point = predictions.find((it) => it.label === 'point');
+                    if (point) {
+                        console.log('point', point);
+                        pointCount++;
+                        if (pointCount > POINT_THRESHOLD + 1) {
+                            pointCount = 0;
+                            const nextProgram =
+                                currentProgram === programs[programs.length - 1]
+                                    ? 0
+                                    : currentProgram;
+                            currentProgram = nextProgram + 1;
+                            console.log(
+                                nextProgram,
+                                programs[programs.length - 1]
+                            );
+                            changeProgram(currentProgram.toString());
+                        }
+                    } else {
+                        pointCount = POINT_THRESHOLD;
                     }
 
                     const facePredictions = predictions.filter(
@@ -394,6 +401,29 @@ function findViewDirMedian(facePredictions) {
             return sum.add(pos);
         }, new Vector3(0.0, 0.0, 0.0));
     return sum.divideScalar(facePredictions.length);
+}
+
+function changeProgram(program) {
+    let params;
+    switch (program) {
+        case '1':
+            params = program1.params;
+            folder1.setSettings(program1.material1);
+            folder2.setSettings(program1.material2);
+            break;
+        case '2':
+            params = program2.params;
+            folder1.setSettings(program2.material1);
+            folder2.setSettings(program2.material2);
+            break;
+        default:
+            params = program1.params;
+            folder1.setSettings(program1.material1);
+            folder1.setSettings(program1.material2);
+            break;
+    }
+
+    initMirror(texture, scene, params);
 }
 
 function posFromBbox(value, divider) {

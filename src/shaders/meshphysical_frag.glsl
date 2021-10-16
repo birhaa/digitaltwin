@@ -258,7 +258,9 @@ void main() {
 	vec3 reflectionColor2;
 	if(isMaterial2) {
 		reflectionColor = calculateRainbow(rainbow2Dir, lightDir, viewDir);
-		reflectionColor2 = vec3(0.0,0.0,0.0);
+		reflectionColor2 = calculateRainbow(rainbow2Dir, vec3(0.0, 1.0, 1.0), viewDir);
+
+		// reflectionColor2 = vec3(0.0,0.0,0.0);
 	}else{
 		reflectionColor = calculateRainbow(rainbow1Dir, lightDir, viewDir);
 		reflectionColor2 = calculateRainbow(rainbow1Dir, vec3(0.0, 1.0, 1.0), viewDir);

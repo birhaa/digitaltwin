@@ -333,6 +333,7 @@ function grabImage(imageCapture) {
         .grabFrame()
         .then((imageBitmap) => {
             handPredictionModel.detect(imageBitmap).then((predictions) => {
+                folder1.getShader().uniforms.rainbow1Dir.value.z = 0.5;
                 if (predictions.length > 0) {
                     // console.log('Predictions: ', predictions);
                     let closed = predictions.find(
@@ -352,34 +353,51 @@ function grabImage(imageCapture) {
 
                         console.log('pinch', pinched);
                     }
+
+                    const facePredictions = predictions.filter(
+                        (it) => it.label === 'face'
+                    );
+
                     let face = predictions.find((it) => it.label === 'face');
                     if (face) {
-                        folder1.getShader().uniforms.rainbow1Dir.value.z = 0.5;
-                        const faceSize =
-                            Math.round(
-                                ((face.bbox[2] * face.bbox[3]) / (1000 * 30)) *
-                                    5,
-                                1
-                            ) / 5.0;
-                        // console.log('face', faceSize);
+                        const dir = findViewDirMedian(facePredictions);
+                        // console.log('pred', dir);
+                        // const faceSize =
+                        //     Math.round(
+                        //         ((face.bbox[2] * face.bbox[3]) / (1000 * 30)) *
+                        //             5,
+                        //         1
+                        //     ) / 5.0;
+                        // // console.log('face', faceSize);
 
                         materialShaders.forEach((shader) => {
-                            const lpos = new Vector3(
-                                (parseFloat(face.bbox[0]) / window.innerWidth) *
-                                    10,
-                                (parseFloat(face.bbox[1]) /
-                                    window.innerHeight) *
-                                    10,
-                                0
-                            );
-                            // console.log(lpos);
-                            shader.uniforms.lightPos.value = lpos;
+                            shader.uniforms.lightPos.value = dir;
                         });
                     }
                 }
             });
         })
         .catch((error) => console.log(error));
+}
+
+function findViewDirMedian(facePredictions) {
+    const sum = facePredictions
+        .map(
+            (face) =>
+                new Vector3(
+                    posFromBbox(face.bbox[0], window.innerWidth),
+                    posFromBbox(face.bbox[1], window.innerHeight),
+                    0
+                )
+        )
+        .reduce((sum, pos) => {
+            return sum.add(pos);
+        }, new Vector3(0.0, 0.0, 0.0));
+    return sum.divideScalar(facePredictions.length);
+}
+
+function posFromBbox(value, divider) {
+    return (parseFloat(value) / divider) * 10;
 }
 
 export default init;

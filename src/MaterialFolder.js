@@ -15,7 +15,7 @@ const startSettingsMaterial1 = {
     useOffset: true,
     stripes: 0.0,
     metalness: 0.4,
-    roughness: 0.4,
+    roughness: 0.0,
     ambientIntensity: 0.2,
     aoMapIntensity: 1.0,
     envMapIntensity: 1.0,
@@ -106,13 +106,13 @@ class MaterialFolder {
                 material.metalness = value;
             });
 
-        this.mainFolder
-            .add(this.settings, 'roughness')
-            .min(0)
-            .max(1)
-            .onChange(function (value) {
-                material.roughness = value;
-            });
+        // this.mainFolder
+        //     .add(this.settings, 'roughness')
+        //     .min(0)
+        //     .max(1)
+        //     .onChange(function (value) {
+        //         material.roughness = value;
+        //     });
 
         // this.mainFolder.add( this.settings, "ambientIntensity" ).min( 0 ).max( 1 ).onChange( function ( value ) {
         //   ambientLight.intensity = value;

@@ -270,6 +270,7 @@ function initMaterial(timeStart, texture, folder, isMaterial2) {
         displacementMap: dismap,
         displacementScale: settings.displacementScale,
         metalness: settings.metalness,
+        roughness: settings.roughness,
         map: texture,
         color: 0xffffff,
         side: THREE.DoubleSide,
@@ -333,7 +334,6 @@ function grabImage(imageCapture) {
         .grabFrame()
         .then((imageBitmap) => {
             handPredictionModel.detect(imageBitmap).then((predictions) => {
-                folder1.getShader().uniforms.rainbow1Dir.value.z = 0.5;
                 if (predictions.length > 0) {
                     // console.log('Predictions: ', predictions);
                     let closed = predictions.find(

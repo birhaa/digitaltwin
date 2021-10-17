@@ -246,7 +246,9 @@ void main() {
 	#include <logdepthbuf_fragment>
 
 	//BIRGITTE
-	vec4 texelColor = textureWithBlur(isMaterial2, vUv3, map);
+	// vec4 texelColor = textureWithBlur(isMaterial2, vUv3, map);
+	// diffuseColor *= texelColor;
+	vec4 texelColor = texture2D( map, vUv3 );
 	diffuseColor *= texelColor;
 	//END BIRGITTE
 
@@ -288,7 +290,7 @@ void main() {
 	// modulation
 	#include <aomap_fragment>
 
-	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.indirectSpecular + totalEmissiveRadiance;
 
 	// this is a stub for the transparency model
 	#ifdef TRANSPARENCY

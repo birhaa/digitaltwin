@@ -6,12 +6,12 @@ import * as handTrack from 'handtrackjs';
 import meshphysical_vert from './shaders/meshphysical_vert.glsl';
 import meshphysical_frag from './shaders/meshphysical_frag.glsl';
 import bumpimg from './images/bumpmap.jpg';
-import alphaimg from './images/alpha.jpg';
-import alphaimg2 from './images/alpha2.jpg';
+import alphaimg from './images/BEKK_Logo_Lys.png';
+import alphaimg2 from './images/BEKK_Logo_Lys.jpg';
 
 import { MaterialFolder } from './MaterialFolder';
 import { MainFolder } from './MainFolder';
-import { program1, program2 } from './Settings.js';
+import { program1, program2, program3, program4 } from './Settings.js';
 import { Vector3 } from 'three';
 
 let initVideoOnce = false;
@@ -26,10 +26,10 @@ let mainFolder, folder1, folder2, folder3, folder4;
 let texture, scene;
 let material1;
 let handPredictionModel;
-let programs = [1, 2];
+let programs = [1, 2, 3, 4];
 let currentProgram = 0;
 
-const POINT_THRESHOLD = 20;
+const POINT_THRESHOLD = 30;
 let pointCount = POINT_THRESHOLD;
 
 const modelParams = {
@@ -141,6 +141,8 @@ function initVideoScene(scene) {
         RainbowsStripy: '1',
         UnicornFlowerPuff: '2',
         dragonSteel: '3',
+        stripeDelight: '4',
+        digitalTwin: '5',
     }).onChange((test) => {
         changeProgram(test);
     });
@@ -192,43 +194,49 @@ function initMirror(texture, scene, params) {
 }
 
 function initmask(scene, params, texture) {
-    if (params.mask) {
-        var numberOfQuads2 = params.nColsMask;
-        var quadSizePros2 = 1.0 / numberOfQuads2;
-        var planeSize2 = 6;
-        var quadSize2 = planeSize2 * quadSizePros2;
+    // if (params.mask) {
+    var numberOfQuads2 = params.nColsMask;
+    var quadSizePros2 = 1.0 / numberOfQuads2;
+    var planeSize2 = 6;
+    var quadSize2 = planeSize2 * quadSizePros2;
 
-        var material3 = initMaterial(timeStart, texture, folder3);
-        var material4 = initMaterial(timeStart, texture, folder4);
-        var alphamap = new THREE.TextureLoader().load(alphaimg2);
-        material3.alphaMap = alphamap;
-        material4.alphaMap = alphamap;
-        material3.transparent = true;
-        material4.transparent = true;
+    var material3 = initMaterial(timeStart, texture, folder3);
+    var material4 = initMaterial(timeStart, texture, folder4);
+    var alphamap = new THREE.TextureLoader().load(alphaimg2);
+    material3.alphaMap = alphamap;
+    material4.alphaMap = alphamap;
+    material3.transparent = true;
+    material4.transparent = true;
+    const newParams = {
+        ...params,
+        mirror: false,
+        mirrorHalf: false,
+        numberOfQuads: 1,
+    };
 
-        mask = new THREE.Group();
+    mask = new THREE.Group();
 
-        for (var i = 0; i < numberOfQuads2; i++) {
-            //console.log('quadSize', quadSizePros2 + ' ' + i);
-            var geometry = new PlaneBufferGeometry(
-                quadSize2,
-                4,
-                32,
-                32,
-                quadSizePros2,
-                i,
-                params
-            );
-            var m = i % 2 == 0 ? material3 : material4;
-            var plane = new THREE.Mesh(geometry, m);
-            plane.translateX(i * quadSize2);
-            mask.add(plane);
-        }
-        mask.translateX(-planeSize2 / 2 + quadSize2 / 2);
-        initalPos = mask.position.x;
-        //mirror.add(mask);
-        scene.add(mask);
+    for (var i = 0; i < numberOfQuads2; i++) {
+        //console.log('quadSize', quadSizePros2 + ' ' + i);
+        var geometry = new PlaneBufferGeometry(
+            quadSize2,
+            4,
+            32,
+            32,
+            quadSizePros2,
+            i,
+            newParams
+        );
+        var m = i % 2 == 0 ? material3 : material4;
+        var plane = new THREE.Mesh(geometry, m);
+        plane.translateX(i * quadSize2);
+        mask.add(plane);
     }
+    mask.translateX(-planeSize2 / 2 + quadSize2 / 2);
+    initalPos = mask.position.x;
+    //mirror.add(mask);
+    scene.add(mask);
+    // }
 }
 
 function initVideoTexture() {
@@ -242,17 +250,17 @@ function initVideoTexture() {
     return texture;
 }
 
-function initMaterial(timeStart, texture, folder, isMaterial2) {
+function initMaterial(timeStart, texture, folder) {
     let settings = folder.getSettings();
     var dismap = new THREE.TextureLoader().load(bumpimg);
-    var bumpmap = new THREE.TextureLoader().load(bumpimg);
+    // var bumpmap = new THREE.TextureLoader().load(bumpimg);
     var alphamap = new THREE.TextureLoader().load(alphaimg);
     var material1 = new THREE.MeshStandardMaterial({
         depthWrite: false,
         depthTest: false,
         transparent: true,
         alphaMap: alphamap,
-        normalMap: bumpmap,
+        // normalMap: bumpmap,
         displacementMap: dismap,
         displacementScale: settings.displacementScale,
         metalness: settings.metalness,
@@ -322,15 +330,16 @@ function grabImage(imageCapture) {
             handPredictionModel.detect(imageBitmap).then((predictions) => {
                 if (predictions.length > 0) {
                     // console.log('Predictions: ', predictions);
-                    // let closed = predictions.find(
-                    //     (it) => it.label === 'closed'
-                    // );
-                    // if (closed) {
-                    //     console.log('closed', closed);
-                    //     // materialShaders.forEach(
-                    //     //     (it) => (it.uniforms.rainbow1Dir.value.z = 0.5)
-                    //     // );
-                    // }
+                    let closed = predictions.find(
+                        (it) => it.label === 'closed'
+                    );
+                    if (closed) {
+                        console.log(mask);
+                        mask.visible = true;
+                    } else {
+                        mask.visible = false;
+                    }
+
                     // let pinched = predictions.find(
                     //     (it) => it.label === 'pinch'
                     // );
@@ -342,7 +351,6 @@ function grabImage(imageCapture) {
 
                     let point = predictions.find((it) => it.label === 'point');
                     if (point) {
-                        console.log('point', point);
                         pointCount++;
                         if (pointCount > POINT_THRESHOLD + 1) {
                             pointCount = 0;
@@ -351,14 +359,10 @@ function grabImage(imageCapture) {
                                     ? 0
                                     : currentProgram;
                             currentProgram = nextProgram + 1;
-                            console.log(
-                                nextProgram,
-                                programs[programs.length - 1]
-                            );
                             changeProgram(currentProgram.toString());
                         }
                     } else {
-                        pointCount = POINT_THRESHOLD;
+                        pointCount = POINT_THRESHOLD - 2;
                     }
 
                     const facePredictions = predictions.filter(
@@ -368,15 +372,6 @@ function grabImage(imageCapture) {
                     let face = predictions.find((it) => it.label === 'face');
                     if (face) {
                         const dir = findViewDirMedian(facePredictions);
-                        // console.log('pred', dir);
-                        // const faceSize =
-                        //     Math.round(
-                        //         ((face.bbox[2] * face.bbox[3]) / (1000 * 30)) *
-                        //             5,
-                        //         1
-                        //     ) / 5.0;
-                        // // console.log('face', faceSize);
-
                         materialShaders.forEach((shader) => {
                             shader.uniforms.lightPos.value = dir;
                         });
@@ -415,6 +410,16 @@ function changeProgram(program) {
             params = program2.params;
             folder1.setSettings(program2.material1);
             folder2.setSettings(program2.material2);
+            break;
+        case '3':
+            params = program3.params;
+            folder1.setSettings(program3.material1);
+            folder2.setSettings(program3.material2);
+            break;
+        case '4':
+            params = program4.params;
+            folder1.setSettings(program4.material1);
+            folder2.setSettings(program4.material2);
             break;
         default:
             params = program1.params;

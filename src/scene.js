@@ -11,7 +11,13 @@ import alphaimg2 from './images/BEKK_Logo_Lys.jpg';
 
 import { MaterialFolder } from './MaterialFolder';
 import { MainFolder } from './MainFolder';
-import { program1, program2, program3, program4 } from './Settings.js';
+import {
+    program1,
+    program2,
+    program3,
+    program4,
+    program5,
+} from './Settings.js';
 import { Vector3 } from 'three';
 
 let initVideoOnce = false;
@@ -26,7 +32,7 @@ let mainFolder, folder1, folder2, folder3, folder4;
 let texture, scene;
 let material1;
 let handPredictionModel;
-let programs = [1, 2, 3, 4];
+let programs = [1, 2, 3, 4, 5];
 let currentProgram = 0;
 
 const POINT_THRESHOLD = 30;
@@ -211,6 +217,7 @@ function initmask(scene, params, texture) {
         ...params,
         mirror: false,
         mirrorHalf: false,
+        useOffset: false,
         numberOfQuads: 1,
     };
 
@@ -333,8 +340,8 @@ function grabImage(imageCapture) {
                     let closed = predictions.find(
                         (it) => it.label === 'closed'
                     );
-                    if (closed) {
-                        console.log(mask);
+                    if (closed && closed.score > 0.8) {
+                        // console.log(closed);
                         mask.visible = true;
                     } else {
                         mask.visible = false;
@@ -420,6 +427,11 @@ function changeProgram(program) {
             params = program4.params;
             folder1.setSettings(program4.material1);
             folder2.setSettings(program4.material2);
+            break;
+        case '5':
+            params = program5.params;
+            folder1.setSettings(program5.material1);
+            folder2.setSettings(program5.material2);
             break;
         default:
             params = program1.params;

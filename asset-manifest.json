@@ -1,18 +1,17 @@
 {
   "files": {
     "main.css": "/digitaltwin/static/css/main.65784521.chunk.css",
-    "main.js": "/digitaltwin/static/js/main.2c0ee30b.chunk.js",
-    "main.js.map": "/digitaltwin/static/js/main.2c0ee30b.chunk.js.map",
+    "main.js": "/digitaltwin/static/js/main.b8b7c48a.chunk.js",
+    "main.js.map": "/digitaltwin/static/js/main.b8b7c48a.chunk.js.map",
     "runtime~main.js": "/digitaltwin/static/js/runtime~main.b0091175.js",
     "runtime~main.js.map": "/digitaltwin/static/js/runtime~main.b0091175.js.map",
-    "static/js/2.5e5e88f6.chunk.js": "/digitaltwin/static/js/2.5e5e88f6.chunk.js",
-    "static/js/2.5e5e88f6.chunk.js.map": "/digitaltwin/static/js/2.5e5e88f6.chunk.js.map",
+    "static/js/2.41966613.chunk.js": "/digitaltwin/static/js/2.41966613.chunk.js",
+    "static/js/2.41966613.chunk.js.map": "/digitaltwin/static/js/2.41966613.chunk.js.map",
     "index.html": "/digitaltwin/index.html",
-    "precache-manifest.075b9bdcc031aa131e4bf5dbb728d3ad.js": "/digitaltwin/precache-manifest.075b9bdcc031aa131e4bf5dbb728d3ad.js",
+    "precache-manifest.737b162b0dafa3ee76965261857ad0d1.js": "/digitaltwin/precache-manifest.737b162b0dafa3ee76965261857ad0d1.js",
     "service-worker.js": "/digitaltwin/service-worker.js",
     "static/css/main.65784521.chunk.css.map": "/digitaltwin/static/css/main.65784521.chunk.css.map",
-    "static/media/alpha.jpg": "/digitaltwin/static/media/alpha.1c841c4c.jpg",
-    "static/media/alpha2.jpg": "/digitaltwin/static/media/alpha2.3c2e863c.jpg",
+    "static/media/BEKK_Logo_Lys.jpg": "/digitaltwin/static/media/BEKK_Logo_Lys.0bb24b49.jpg",
     "static/media/bumpmap.jpg": "/digitaltwin/static/media/bumpmap.d444e896.jpg"
   }
 }

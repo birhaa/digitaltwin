@@ -256,16 +256,20 @@ void main() {
 
 	//BIRGITTE
 
-	vec3 reflectionColor;
-	vec3 reflectionColor2;
-	if(isMaterial2) {
-		reflectionColor = calculateRainbow(rainbow2Dir, lightDir, viewDir);
-		reflectionColor2 = calculateRainbow(rainbow2Dir, vec3(0.0, 1.0, 1.0), viewDir);
-
-		// reflectionColor2 = vec3(0.0,0.0,0.0);
+	vec3 reflectionColor = vec3(0.0, 0.0, 0.0);
+	vec3 reflectionColor2 = vec3(0.0, 0.0, 0.0);
+	bool calculateMat2 = rainbow2Dir.x > 0.0 || rainbow2Dir.y > 0.0	 || rainbow2Dir.z > 0.0;
+	bool calculateMat1 = rainbow1Dir.x > 0.0 || rainbow1Dir.y > 0.0	 || rainbow1Dir.z > 0.0;
+	if(isMaterial2 ) {
+		if(calculateMat2){
+			reflectionColor = calculateRainbow(rainbow2Dir, lightDir, viewDir);
+			reflectionColor2 = calculateRainbow(rainbow2Dir, vec3(0.0, 1.0, 1.0), viewDir);
+		}
 	}else{
-		reflectionColor = calculateRainbow(rainbow1Dir, lightDir, viewDir);
-		reflectionColor2 = calculateRainbow(rainbow1Dir, vec3(0.0, 1.0, 1.0), viewDir);
+		if(calculateMat1){
+			reflectionColor = calculateRainbow(rainbow1Dir, lightDir, viewDir);
+			reflectionColor2 = calculateRainbow(rainbow1Dir, vec3(0.0, 1.0, 1.0), viewDir);
+		}
 	}
 	diffuseColor.rgb = diffuseColor.rgb + reflectionColor + reflectionColor2;
 

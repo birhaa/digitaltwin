@@ -37,6 +37,7 @@ let currentProgram = 0;
 
 const POINT_THRESHOLD = 30;
 let pointCount = POINT_THRESHOLD;
+let isPinched = false;
 
 const modelParams = {
     flipHorizontal: true, // flip e.g for video
@@ -347,14 +348,31 @@ function grabImage(imageCapture) {
                         mask.visible = false;
                     }
 
-                    // let pinched = predictions.find(
-                    //     (it) => it.label === 'pinch'
-                    // );
-                    // if (pinched) {
-                    //     folder1.getShader().uniforms.nCols = 60;
-
-                    //     console.log('pinch', pinched);
-                    // }
+                    let pinched = predictions.find(
+                        (it) => it.label === 'pinch'
+                    );
+                    if (pinched) {
+                        // console.log(folder1.getShader().uniforms);
+                        if (!isPinched) {
+                            folder1.getShader().uniforms.playWave.value = true;
+                            folder1.getShader().uniforms.waveFrequency.value = 9.0;
+                            folder1.getShader().uniforms.waveSize.value.x = 0.05;
+                            folder1.getShader().uniforms.waveSpeed.value = 1.0;
+                            isPinched = true;
+                        }
+                    } else {
+                        if (isPinched) {
+                            folder1.getShader().uniforms.playWave.value =
+                                folder1.getSettings().playWave;
+                            folder1.getShader().uniforms.waveFrequency.value =
+                                folder1.getSettings().waveFrequency;
+                            folder1.getShader().uniforms.waveSize.value.x =
+                                folder1.getSettings().waveSizeX;
+                            folder1.getShader().uniforms.waveSpeed.value =
+                                folder1.getSettings().waveSpeed;
+                            isPinched = false;
+                        }
+                    }
 
                     let point = predictions.find((it) => it.label === 'point');
                     if (point) {

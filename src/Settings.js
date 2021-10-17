@@ -7,7 +7,7 @@ export const program1 = {
         mirrorHalf: false,
         mirrorOffset: false,
         mask: false,
-        animationSpeed: 0,
+        animationSpeed: 0.5,
     },
     material1: {
         useOffset: true,

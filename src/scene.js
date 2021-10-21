@@ -28,6 +28,7 @@ let initalPos = 0.0;
 let materialShaders = [];
 
 const gui = new dat.GUI();
+dat.GUI.toggleHide();
 let mainFolder, folder1, folder2, folder3, folder4;
 let texture, scene;
 let material1;
